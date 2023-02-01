@@ -19,7 +19,7 @@ public class Token implements IToken {
     }
 
     public SourceLocation getSourceLocation() {
-        return
+        return;
     }
 
     public Kind getKind() {
