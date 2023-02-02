@@ -4,18 +4,6 @@ public class Token implements IToken {
 
     //Added by Tana from ppt
     public record SourceLocation(int line, int column) {}
-    //Added by Tana from ppt
-    public static enum Kind {
-        IDENT,
-        NUM_LIT,
-        PLUS,
-        TIMES,
-        EQ,
-        KW_IF,
-        KW_ELSE,
-        EOF,
-        ERROR //may be useful
-    }
 
     final Kind kind;
     final int line;

@@ -1,18 +1,184 @@
 package edu.ufl.cise.plcsp23;
 
-public class Scanner implements IScanner{
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Scanner implements IScanner {
     final String input;
-    final char[] inputCharacters;
+    final List<Token> tokens = new ArrayList<>();
+    private static final Map<String, Token.Kind> reserved;
 
-    int pos;
-    char ch;
-
-    public Scanner(String input){
-        this.input = input;
-        inputCharacters = input.toCharArray();
-        pos = 0;
-        ch = inputCharacters[pos];
+    static { // add reserved words
+        reserved = new HashMap<>();
+        reserved.put("if", Token.Kind.RES_if);
     }
+
+
+    private int start = 0;
+    private int current = 0;
+    private int line = 1;
+
+    public Scanner(String input) {
+        this.input = input;
+    }
+
+    List<Token> scanTokens() {
+        while (!isAtEnd()) {
+            // We are at the beginning of the next lexeme.
+            start = current;
+            scanToken();
+        }
+
+        tokens.add(new Token(Token.Kind.EOF, line, current, 0, "")); // change parameters
+        return tokens;
+    }
+
+    private void scanToken() {
+        char c = advance();
+        switch (c) {
+            case '(': addToken(Token.Kind.LPAREN); break;
+            case ')': addToken(RPAREN); break;
+            case '{': addToken(LCURLY); break;
+            case '}': addToken(RCURLY); break;
+            case ',': addToken(COMMA); break;
+            case '.': addToken(DOT); break;
+            case '-': addToken(MINUS); break;
+            case '+': addToken(PLUS); break;
+            case '!':
+                addToken(match('=') ? BANG_EQUAL : BANG);
+                break;
+            case '=':
+                addToken(match('=') ? EQUAL_EQUAL : EQUAL);
+                break;
+            case '<':
+                addToken(match('=') ? LESS_EQUAL : LESS);
+                break;
+            case '>':
+                addToken(match('=') ? GREATER_EQUAL : GREATER);
+                break;
+            case '~':
+                // A comment goes until the end of the line.
+                while (peek() != '\n' && !isAtEnd()) advance();
+                break;
+            case ' ':
+            case '\r':
+            case '\t':
+                // Ignore whitespace.
+                break;
+
+            case '\n':
+                line++;
+                break;
+            case '"': string(); break;
+            default:
+                if (isDigit(c)) {
+
+                    number(); // edit for num literals
+                }
+                else if (isAlpha(c)) {
+                    identifier();
+                }
+                else {
+                    new LexicalException("illegal char with ascii value: " + (int) c);
+                }
+                break;
+        }
+    }
+
+    private void identifier() {
+        while (isAlphaNumeric(peek())) advance();
+
+        String text = input.substring(start, current);
+        Token.Kind type = reserved.get(text);
+        if (type == null) type = Token.Kind.IDENT;
+        addToken(type);
+    }
+
+    private void number() { // edit for number literals
+        while (isDigit(peek())) advance();
+
+        // Look for a fractional part.
+        if (peek() == '.' && isDigit(peekNext())) {
+            // Consume the "."
+            advance();
+
+            while (isDigit(peek())) advance();
+        }
+
+        addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
+    }
+
+    private void string() {
+        while (peek() != '"' && !isAtEnd()) {
+            if (peek() == '\n') line++;
+            advance();
+        }
+
+        if (isAtEnd()) {
+            new PLCException("Unterminated string at line " + line);
+            return;
+        }
+
+        // The closing ".
+        advance();
+
+        // Trim the surrounding quotes.
+        String value = input.substring(start + 1, current - 1);
+        addToken(Token.Kind.STRING_LIT, value);
+    }
+
+    private boolean match(char expected) {
+        if (isAtEnd()) return false;
+        if (input.charAt(current) != expected) return false;
+
+        current++;
+        return true;
+    }
+
+    private char peek() {
+        if (isAtEnd()) return '\0';
+        return input.charAt(current);
+    }
+
+    private char peekNext() {
+        if (current + 1 >= input.length()) return '\0';
+        return input.charAt(current + 1);
+    }
+
+    private boolean isAlpha(char c) {
+        return (c >= 'a' && c <= 'z') ||
+                (c >= 'A' && c <= 'Z') ||
+                c == '_';
+    }
+
+    private boolean isAlphaNumeric(char c) {
+        return isAlpha(c) || isDigit(c);
+    }
+
+    private boolean isDigit(char c) {
+        return c >= '0' && c <= '9';
+    }
+
+    private boolean isAtEnd() {
+        return current >= input.length();
+    }
+
+    private char advance() {
+        return input.charAt(current++);
+    }
+
+    private void addToken(Token.Kind type) {
+        String text = input.substring(start, current);
+        tokens.add(new Token(type, line, start, current - start, text));
+    }
+
+    private void addToken(Token.Kind type, String value) {
+        tokens.add(new Token(type, line, start, current - start, value));
+    }
+
+
     @Override
     public Token next() throws LexicalException {
         return null;
@@ -25,8 +191,12 @@ public class Scanner implements IScanner{
         IN_NUM_LIT
     }
 
-    private Token scanToken() throws LexicalException {
-        State state = State.START;
+    //private Token scanToken() throws LexicalException {
+
+
+
+
+        /*State state = State.START;
         int tokenStart = -1;
         while(true) {
             switch (state) {
@@ -115,4 +285,8 @@ public class Scanner implements IScanner{
     private void error(String message) throws LexicalException{
         throw new LexicalException("Error at pos " + pos + ": " + message);
     }
+}*/
+
+       // return null;
+    //}
 }
