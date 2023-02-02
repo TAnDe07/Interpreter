@@ -39,25 +39,53 @@ public class Scanner implements IScanner {
         char c = advance();
         switch (c) {
             case '(': addToken(Token.Kind.LPAREN); break;
-            case ')': addToken(RPAREN); break;
-            case '{': addToken(LCURLY); break;
-            case '}': addToken(RCURLY); break;
-            case ',': addToken(COMMA); break;
-            case '.': addToken(DOT); break;
-            case '-': addToken(MINUS); break;
-            case '+': addToken(PLUS); break;
-            case '!':
-                addToken(match('=') ? BANG_EQUAL : BANG);
-                break;
+            case ')': addToken(Token.Kind.RPAREN); break;
+            case '{': addToken(Token.Kind.LCURLY); break;
+            case '}': addToken(Token.Kind.RCURLY); break;
+            case ',': addToken(Token.Kind.COMMA); break;
+            case '.': addToken(Token.Kind.DOT); break;
+            case '-': addToken(Token.Kind.MINUS); break;
+            case '+': addToken(Token.Kind.PLUS); break;
+            case '!': addToken(Token.Kind.BANG); break;
+            case '?': addToken(Token.Kind.QUESTION); break;
+            case ':': addToken(Token.Kind.COLON); break;
+            case ']': addToken(Token.Kind.RSQUARE); break;
+            case '[': addToken(Token.Kind.LSQUARE); break;
             case '=':
-                addToken(match('=') ? EQUAL_EQUAL : EQUAL);
+                addToken(match('=') ? Token.Kind.EQ : Token.Kind.ASSIGN);
                 break;
             case '<':
-                addToken(match('=') ? LESS_EQUAL : LESS);
+                if (match('=')) {
+                    addToken(Token.Kind.LE);
+                }
+                else if (match('-')) {
+                    if (match('>')) {
+                        addToken(Token.Kind.EXCHANGE);
+                    }
+                    else {
+                        addToken(Token.Kind.LT);
+                        addToken(Token.Kind.MINUS);
+                    }
+                }
+                else {
+                    addToken(Token.Kind.LT);
+                }
+
                 break;
             case '>':
-                addToken(match('=') ? GREATER_EQUAL : GREATER);
+                addToken(match('=') ? Token.Kind.GE : Token.Kind.GT);
                 break;
+            case '&':
+                addToken(match('&') ? Token.Kind.AND : Token.Kind.BITAND);
+                break;
+            case '|':
+                addToken(match('|') ? Token.Kind.OR : Token.Kind.BITOR);
+                break;
+            case '*':
+                addToken(match('*') ? Token.Kind.EXP : Token.Kind.TIMES);
+                break;
+            case '/': addToken(Token.Kind.DIV); break;
+            case '%': addToken(Token.Kind.MOD); break;
             case '~':
                 // A comment goes until the end of the line.
                 while (peek() != '\n' && !isAtEnd()) advance();
@@ -65,6 +93,7 @@ public class Scanner implements IScanner {
             case ' ':
             case '\r':
             case '\t':
+            case '\b':
                 // Ignore whitespace.
                 break;
 
