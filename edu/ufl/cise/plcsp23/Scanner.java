@@ -95,57 +95,51 @@ public class Scanner implements IScanner {
             case '\t':
             case '\b':
                 // Ignore whitespace.
-                break;
-
-            case '\n':
-                line++;
-                break;
-            case '"': string(); break;
-            default:
+            case '\n' -> line++;
+            break;
+            case '\"' -> string();
+            default -> {
                 if (isDigit(c)) {
-
-                    number(); // edit for num literals
+                    if (c == '0') { // 0 at beginning can only be by itself
+                        addToken(Token.Kind.NUM_LIT);
+                    }
+                    else {
+                        number();
+                    }
                 }
                 else if (isAlpha(c)) {
                     identifier();
                 }
-                else {
+                else {  // not a recognized character
                     new LexicalException("illegal char with ascii value: " + (int) c);
                 }
                 break;
+            }
         }
     }
 
     private void identifier() {
-        while (isAlphaNumeric(peek())) advance();
+        while (isAlphaNumeric(peek())) advance(); // check until no more letter, digits, or _
 
         String text = input.substring(start, current);
-        Token.Kind type = reserved.get(text);
-        if (type == null) type = Token.Kind.IDENT;
+        Token.Kind type = reserved.get(text); // check reserved list for text
+        if (type == null) type = Token.Kind.IDENT; // if not in list, it's an identifier
         addToken(type);
     }
 
-    private void number() { // edit for number literals
-        while (isDigit(peek())) advance();
+    private void number() {
+        while (isDigit(peek())) advance(); // check until no more digits
 
-        // Look for a fractional part.
-        if (peek() == '.' && isDigit(peekNext())) {
-            // Consume the "."
-            advance();
-
-            while (isDigit(peek())) advance();
-        }
-
-        addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
+        addToken(Token.Kind.NUM_LIT);
     }
 
-    private void string() {
-        while (peek() != '"' && !isAtEnd()) {
-            if (peek() == '\n') line++;
+    private void string() { // edit to exclude " and \ and includes escape sequences
+        while (peek() != '"' && !isAtEnd()) {   // while second parenthesis not reached and not end of file
+
             advance();
         }
 
-        if (isAtEnd()) {
+        if (isAtEnd()) { // string starts but doesn't end
             new PLCException("Unterminated string at line " + line);
             return;
         }
@@ -155,7 +149,7 @@ public class Scanner implements IScanner {
 
         // Trim the surrounding quotes.
         String value = input.substring(start + 1, current - 1);
-        addToken(Token.Kind.STRING_LIT, value);
+        addToken(Token.Kind.STRING_LIT);
     }
 
     private boolean match(char expected) {
@@ -201,10 +195,6 @@ public class Scanner implements IScanner {
     private void addToken(Token.Kind type) {
         String text = input.substring(start, current);
         tokens.add(new Token(type, line, start, current - start, text));
-    }
-
-    private void addToken(Token.Kind type, String value) {
-        tokens.add(new Token(type, line, start, current - start, value));
     }
 
 

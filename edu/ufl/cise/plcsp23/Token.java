@@ -2,7 +2,6 @@ package edu.ufl.cise.plcsp23;
 
 public class Token implements IToken {
 
-    /* Added by Tana from ppt
     public record SourceLocation(int line, int column) {}
 
     final Kind kind;
@@ -19,7 +18,7 @@ public class Token implements IToken {
         this.column = column;
         this.length = length;
         this.source = source;
-    } */
+    }
 
     public SourceLocation getSourceLocation() {
         return null;
