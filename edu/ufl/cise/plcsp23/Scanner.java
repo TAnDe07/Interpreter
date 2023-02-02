@@ -38,22 +38,20 @@ public class Scanner implements IScanner {
     private void scanToken() {
         char c = advance();
         switch (c) {
-            case '('-> addToken(Token.Kind.LPAREN); break;
-            case ')'-> addToken(Token.Kind.RPAREN); break;
-            case '{'-> addToken(Token.Kind.LCURLY); break;
-            case '}'-> addToken(Token.Kind.RCURLY); break;
-            case ','-> addToken(Token.Kind.COMMA); break;
-            case '.'-> addToken(Token.Kind.DOT); break;
-            case '-'-> addToken(Token.Kind.MINUS); break;
-            case '+'-> addToken(Token.Kind.PLUS); break;
-            case '!'-> addToken(Token.Kind.BANG); break;
-            case '?'-> addToken(Token.Kind.QUESTION); break;
-            case ':'-> addToken(Token.Kind.COLON); break;
-            case ']'-> addToken(Token.Kind.RSQUARE); break;
-            case '['-> addToken(Token.Kind.LSQUARE); break;
-            case '='->
-                    addToken(match('=') ? Token.Kind.EQ : Token.Kind.ASSIGN);
-                break;
+            case '('-> addToken(Token.Kind.LPAREN);
+            case ')'-> addToken(Token.Kind.RPAREN);
+            case '{'-> addToken(Token.Kind.LCURLY);
+            case '}'-> addToken(Token.Kind.RCURLY);
+            case ','-> addToken(Token.Kind.COMMA);
+            case '.'-> addToken(Token.Kind.DOT);
+            case '-'-> addToken(Token.Kind.MINUS);
+            case '+'-> addToken(Token.Kind.PLUS);
+            case '!'-> addToken(Token.Kind.BANG);
+            case '?'-> addToken(Token.Kind.QUESTION);
+            case ':'-> addToken(Token.Kind.COLON);
+            case ']'-> addToken(Token.Kind.RSQUARE);
+            case '['-> addToken(Token.Kind.LSQUARE);
+            case '='-> addToken(match('=') ? Token.Kind.EQ : Token.Kind.ASSIGN);
             case '<' -> {
                 if (match('=')) {
                     addToken(Token.Kind.LE);
@@ -70,27 +68,17 @@ public class Scanner implements IScanner {
                 else {
                     addToken(Token.Kind.LT);
                 }
-
-                break;
             }
-            case '>'->
-                addToken(match('=') ? Token.Kind.GE : Token.Kind.GT);
-                break;
-            case '&'->
-                addToken(match('&') ? Token.Kind.AND : Token.Kind.BITAND);
-                break;
-            case '|'->
-                addToken(match('|') ? Token.Kind.OR : Token.Kind.BITOR);
-                break;
-            case '*'->
-                addToken(match('*') ? Token.Kind.EXP : Token.Kind.TIMES);
-                break;
-            case '/'-> addToken(Token.Kind.DIV); break;
-            case '%'-> addToken(Token.Kind.MOD); break;
+            case '>'-> addToken(match('=') ? Token.Kind.GE : Token.Kind.GT);
+            case '&'-> addToken(match('&') ? Token.Kind.AND : Token.Kind.BITAND);
+            case '|'-> addToken(match('|') ? Token.Kind.OR : Token.Kind.BITOR);
+            case '*'-> addToken(match('*') ? Token.Kind.EXP : Token.Kind.TIMES);
+            case '/'-> addToken(Token.Kind.DIV);
+            case '%'-> addToken(Token.Kind.MOD);
             case '~'-> {
                 // A comment goes until the end of the line.
                 while (peek() != '\n' && !isAtEnd()) advance();
-                break;
+
             }
             case ' ' -> {
             }
@@ -100,7 +88,6 @@ public class Scanner implements IScanner {
                 // Ignore whitespace.
             }
             case '\n' -> line++;
-            break;
             case '\"' -> string();
             default -> {
                 if (isDigit(c)) {
@@ -117,7 +104,6 @@ public class Scanner implements IScanner {
                 else {  // not a recognized character
                     new LexicalException("illegal char with ascii value: " + (int) c);
                 }
-                break;
             }
         }
     }
