@@ -38,23 +38,23 @@ public class Scanner implements IScanner {
     private void scanToken() {
         char c = advance();
         switch (c) {
-            case '(': addToken(Token.Kind.LPAREN); break;
-            case ')': addToken(Token.Kind.RPAREN); break;
-            case '{': addToken(Token.Kind.LCURLY); break;
-            case '}': addToken(Token.Kind.RCURLY); break;
-            case ',': addToken(Token.Kind.COMMA); break;
-            case '.': addToken(Token.Kind.DOT); break;
-            case '-': addToken(Token.Kind.MINUS); break;
-            case '+': addToken(Token.Kind.PLUS); break;
-            case '!': addToken(Token.Kind.BANG); break;
-            case '?': addToken(Token.Kind.QUESTION); break;
-            case ':': addToken(Token.Kind.COLON); break;
-            case ']': addToken(Token.Kind.RSQUARE); break;
-            case '[': addToken(Token.Kind.LSQUARE); break;
-            case '=':
-                addToken(match('=') ? Token.Kind.EQ : Token.Kind.ASSIGN);
+            case '('-> addToken(Token.Kind.LPAREN); break;
+            case ')'-> addToken(Token.Kind.RPAREN); break;
+            case '{'-> addToken(Token.Kind.LCURLY); break;
+            case '}'-> addToken(Token.Kind.RCURLY); break;
+            case ','-> addToken(Token.Kind.COMMA); break;
+            case '.'-> addToken(Token.Kind.DOT); break;
+            case '-'-> addToken(Token.Kind.MINUS); break;
+            case '+'-> addToken(Token.Kind.PLUS); break;
+            case '!'-> addToken(Token.Kind.BANG); break;
+            case '?'-> addToken(Token.Kind.QUESTION); break;
+            case ':'-> addToken(Token.Kind.COLON); break;
+            case ']'-> addToken(Token.Kind.RSQUARE); break;
+            case '['-> addToken(Token.Kind.LSQUARE); break;
+            case '='->
+                    addToken(match('=') ? Token.Kind.EQ : Token.Kind.ASSIGN);
                 break;
-            case '<':
+            case '<' -> {
                 if (match('=')) {
                     addToken(Token.Kind.LE);
                 }
@@ -72,29 +72,33 @@ public class Scanner implements IScanner {
                 }
 
                 break;
-            case '>':
+            }
+            case '>'->
                 addToken(match('=') ? Token.Kind.GE : Token.Kind.GT);
                 break;
-            case '&':
+            case '&'->
                 addToken(match('&') ? Token.Kind.AND : Token.Kind.BITAND);
                 break;
-            case '|':
+            case '|'->
                 addToken(match('|') ? Token.Kind.OR : Token.Kind.BITOR);
                 break;
-            case '*':
+            case '*'->
                 addToken(match('*') ? Token.Kind.EXP : Token.Kind.TIMES);
                 break;
-            case '/': addToken(Token.Kind.DIV); break;
-            case '%': addToken(Token.Kind.MOD); break;
-            case '~':
+            case '/'-> addToken(Token.Kind.DIV); break;
+            case '%'-> addToken(Token.Kind.MOD); break;
+            case '~'-> {
                 // A comment goes until the end of the line.
                 while (peek() != '\n' && !isAtEnd()) advance();
                 break;
-            case ' ':
-            case '\r':
-            case '\t':
-            case '\b':
+            }
+            case ' ' -> {
+            }
+            case '\r'-> {}
+            case '\t'-> {}
+            case '\b' -> {
                 // Ignore whitespace.
+            }
             case '\n' -> line++;
             break;
             case '\"' -> string();
@@ -203,12 +207,12 @@ public class Scanner implements IScanner {
         return null;
     }
 
-    private enum State {
+    /*private enum State {
         START,
         HAVE_EQ,
         IN_IDENT,
         IN_NUM_LIT
-    }
+    }*/
 
     //private Token scanToken() throws LexicalException {
 
