@@ -21,7 +21,7 @@ public class Token implements IToken {
         this.source = source;
     }
 
-    public SourceLocation getSourceLocation() {
+    public IToken.SourceLocation getSourceLocation() {
         return null;
     }
 

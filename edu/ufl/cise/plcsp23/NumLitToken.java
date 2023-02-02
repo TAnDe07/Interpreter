@@ -22,6 +22,14 @@ public class NumLitToken {
     public String getNumLitString() {
         return source;
     }
+
+   /* default:
+            if (isDigit(c)) {
+        number();
+    } else {
+        error(line, "Unexpected character.");
+    }
+        break;*/
 }
 
 

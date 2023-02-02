@@ -3,12 +3,12 @@ package edu.ufl.cise.plcsp23;
 public class StringLitToken implements IStringLitToken {
 
     String getValue() {
-
+        return null;
     }
 
     @Override
     public SourceLocation getSourceLocation() {
-
+        return null;
     }
 
     @Override
@@ -18,6 +18,6 @@ public class StringLitToken implements IStringLitToken {
 
     @Override
     public String getTokenString() {
-
+        return null;
     }
 }
