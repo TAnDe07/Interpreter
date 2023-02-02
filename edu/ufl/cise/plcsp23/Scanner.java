@@ -151,8 +151,6 @@ public class Scanner implements IScanner {
         // The closing ".
         advance();
 
-        // Trim the surrounding quotes.
-        String value = input.substring(start + 1, current - 1);
         addToken(Token.Kind.STRING_LIT);
     }
 
@@ -197,7 +195,13 @@ public class Scanner implements IScanner {
     }
 
     private void addToken(Token.Kind type) {
-        String text = input.substring(start, current);
+        String text;
+        if (type == Token.Kind.STRING_LIT) {
+            text = input.substring(start + 1, current + 1); // remove quotes
+        }
+        else {
+            text = input.substring(start, current);
+        }
         tokens.add(new Token(type, line, start, current - start, text));
     }
 
