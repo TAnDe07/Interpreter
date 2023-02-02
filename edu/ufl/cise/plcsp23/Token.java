@@ -4,6 +4,7 @@ public class Token implements IToken {
 
     /* Added by Tana from ppt
     public record SourceLocation(int line, int column) {}
+    */
 
     final Kind kind;
     final int line;
@@ -11,7 +12,7 @@ public class Token implements IToken {
     final int length;
     final String source;
 
-*/
+
     public Token(Kind kind, int line, int column, int length, String source) {
         super();
         this.kind = kind;
