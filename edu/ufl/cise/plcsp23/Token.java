@@ -34,7 +34,7 @@ public class Token implements IToken {
     }
 
     public SourceLocation getSourceLocation() {
-        return;
+        return null;
     }
 
     public Kind getKind() {
