@@ -23,7 +23,7 @@ public class Scanner implements IScanner {
         pos = 0;
         line = 0;
         column = 0;
-        ch = inputChars[pos];
+        ch = inputChars[0];
     }
 
     @Override
@@ -82,6 +82,7 @@ public class Scanner implements IScanner {
         column++;
         int tokenStart = -1;
         while(true) {
+            ch = inputChars[pos];
             switch (state) {
                 case START -> {
                     tokenStart = pos;
@@ -100,51 +101,67 @@ public class Scanner implements IScanner {
                         }
                         //one offs
                         case '+' -> {
+                            pos++;
                             return new Token(Token.Kind.PLUS, tokenStart, 1, inputChars, line, column);
                         }
                         case '.' -> {
+                            pos++;
                             return new Token(Token.Kind.DOT, tokenStart, 1, inputChars, line, column);
                         }
                         case ',' -> {
+                            pos++;
                             return new Token(Token.Kind.COMMA, tokenStart, 1, inputChars, line, column);
                         }
                         case '?' -> {
+                            pos++;
                             return new Token(Token.Kind.QUESTION, tokenStart, 1, inputChars, line, column);
                         }
                         case ':' -> {
+                            pos++;
                             return new Token(Token.Kind.COLON, tokenStart, 1, inputChars, line, column);
                         }
                         case '(' -> {
+                            pos++;
                             return new Token(Token.Kind.LPAREN, tokenStart, 1, inputChars, line, column);
                         }
                         case ')' -> {
+                            pos++;
                             return new Token(Token.Kind.RPAREN, tokenStart, 1, inputChars, line, column);
                         }
                         case '[' -> {
+                            pos++;
                             return new Token(Token.Kind.LSQUARE, tokenStart, 1, inputChars, line, column);
                         }
                         case ']' -> {
+                            pos++;
                             return new Token(Token.Kind.RSQUARE, tokenStart, 1, inputChars, line, column);
                         }
                         case '{' -> {
+                            pos++;
                             return new Token(Token.Kind.LCURLY, tokenStart, 1, inputChars, line, column);
                         }
                         case '}' -> {
+                            pos++;
                             return new Token(Token.Kind.RCURLY, tokenStart, 1, inputChars, line, column);
                         }
                         case '!' -> {
+                            pos++;
                             return new Token(Token.Kind.BANG, tokenStart, 1, inputChars, line, column);
                         }
                         case '-' -> {
+                            pos++;
                             return new Token(Token.Kind.MINUS, tokenStart, 1, inputChars, line, column);
                         }
                         case '/' -> {
+                            pos++;
                             return new Token(Token.Kind.DIV, tokenStart, 1, inputChars, line, column);
                         }
                         case '%' -> {
+                            pos++;
                             return new Token(Token.Kind.MOD, tokenStart, 1, inputChars, line, column);
                         }
                         case '0' -> {
+                            pos++;
                             long i = 0;
                             return new NumLitToken(tokenStart, 1, "0", line, column, i);
                         }
@@ -278,7 +295,7 @@ public class Scanner implements IScanner {
                             length2--;
                         }
 
-                        long i = Integer.parseInt(value);
+                        long i = Long.parseLong(value);
 
                         if (i > Integer.MAX_VALUE) {
                             error("Number too large");

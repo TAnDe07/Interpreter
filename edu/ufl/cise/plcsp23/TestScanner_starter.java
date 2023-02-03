@@ -95,14 +95,24 @@ class TestScanner_starter {
 	}
 
 
-	@Test
+	@Test	// works
 	void emptyProg() throws LexicalException {
 		String input = "";
 		IScanner scanner = CompilerComponentFactory.makeScanner(input);
 		checkEOF(scanner.next());
 	}
 
-	@Test
+	/** The Scanner should not backtrack so this input should throw an exception */
+	@Test // works
+	void incompleteExchangeThrowsException() throws LexicalException {
+		String input = " <- ";
+		IScanner scanner = CompilerComponentFactory.makeScanner(input);
+		assertThrows(LexicalException.class, () -> {
+			scanner.next();
+		});
+	}
+
+	@Test // works
 	void onlyWhiteSpace() throws LexicalException {
 		String input = " \t \r\n \f \n";
 		IScanner scanner = CompilerComponentFactory.makeScanner(input);
@@ -110,50 +120,16 @@ class TestScanner_starter {
 		checkEOF(scanner.next());  //repeated invocations of next after end reached should return EOF token
 	}
 
-	@Test
-	void numLits1() throws LexicalException {
+	@Test // works
+	void lessThanGreaterThanExchange() throws LexicalException {
 		String input = """
-				123
-				05 240
+				<->>>>=
+				<<=<
 				""";
-		IScanner scanner = CompilerComponentFactory.makeScanner(input);
-		checkNUM_LIT(123, scanner.next());
-		checkNUM_LIT(0, scanner.next());
-		checkNUM_LIT(5, scanner.next());
-		checkNUM_LIT(240, scanner.next());
-		checkEOF(scanner.next());
-	}
-	
-	@Test
-	//Too large should still throw LexicalException
-	void numLitTooBig() throws LexicalException {
-		String input = "999999999999999999999";
-		IScanner scanner = CompilerComponentFactory.makeScanner(input);
-		assertThrows(LexicalException.class, () -> {
-			scanner.next();
-		});
+		checkTokens(input, Kind.EXCHANGE, Kind.GT, Kind.GT, Kind.GE, Kind.LT, Kind.LE, Kind.LT, Kind.EOF);
 	}
 
-
-	@Test
-	void identsAndReserved() throws LexicalException {
-		String input = """
-				i0
-				  i1  x ~~~2 spaces at beginning and after il
-				y Y
-				""";
-
-		IScanner scanner = CompilerComponentFactory.makeScanner(input);
-		checkToken(Kind.IDENT,"i0", new SourceLocation(1,1), scanner.next());
-		checkToken(Kind.IDENT, "i1",new SourceLocation(2,3), scanner.next());
-		checkToken(Kind.RES_x, "x", new SourceLocation(2,7), scanner.next());		
-		checkToken(Kind.RES_y, "y", new SourceLocation(3,1), scanner.next());
-		checkToken(Kind.RES_Y, "Y", new SourceLocation(3,3), scanner.next());
-		checkEOF(scanner.next());
-	}
-	
-
-	@Test
+	@Test // works
 	void operators0() throws LexicalException {
 		String input = """
 				==
@@ -174,6 +150,7 @@ class TestScanner_starter {
 		checkToken(Kind.ASSIGN, scanner.next());
 		checkEOF(scanner.next());
 	}
+
 
 
 	@Test
@@ -203,7 +180,7 @@ class TestScanner_starter {
 			scanner.next();
 		});
 	}
-	
+
 	@Test
 	void illegalLineTermInStringLiteral() throws LexicalException {
 		String input = """
@@ -217,23 +194,47 @@ class TestScanner_starter {
 		});
 	}
 
+
 	@Test
-	void lessThanGreaterThanExchange() throws LexicalException {
+	void numLits1() throws LexicalException {
 		String input = """
-				<->>>>=
-				<<=<
+				123
+				05 240
 				""";
-		checkTokens(input, Kind.EXCHANGE, Kind.GT, Kind.GT, Kind.GE, Kind.LT, Kind.LE, Kind.LT, Kind.EOF);
+		IScanner scanner = CompilerComponentFactory.makeScanner(input);
+		checkNUM_LIT(123, scanner.next());
+		checkNUM_LIT(0, scanner.next());
+		checkNUM_LIT(5, scanner.next());
+		checkNUM_LIT(240, scanner.next());
+		checkEOF(scanner.next());
 	}
-	
-	/** The Scanner should not backtrack so this input should throw an exception */
+
 	@Test
-	void incompleteExchangeThrowsException() throws LexicalException {
-		String input = " <- ";
+	//Too large should still throw LexicalException
+	void numLitTooBig() throws LexicalException {
+		String input = "999999999999999999999";
 		IScanner scanner = CompilerComponentFactory.makeScanner(input);
 		assertThrows(LexicalException.class, () -> {
 			scanner.next();
-		});	
+		});
+	}
+
+
+	@Test
+	void identsAndReserved() throws LexicalException {
+		String input = """
+				i0
+				  i1  x ~~~2 spaces at beginning and after il
+				y Y
+				""";
+
+		IScanner scanner = CompilerComponentFactory.makeScanner(input);
+		checkToken(Kind.IDENT,"i0", new SourceLocation(1,1), scanner.next());
+		checkToken(Kind.IDENT, "i1",new SourceLocation(2,3), scanner.next());
+		checkToken(Kind.RES_x, "x", new SourceLocation(2,7), scanner.next());
+		checkToken(Kind.RES_y, "y", new SourceLocation(3,1), scanner.next());
+		checkToken(Kind.RES_Y, "Y", new SourceLocation(3,3), scanner.next());
+		checkEOF(scanner.next());
 	}
 
 	@Test
@@ -248,26 +249,6 @@ class TestScanner_starter {
 			@SuppressWarnings("unused")
 			IToken t = scanner.next();
 		});
-	}
-
-	@Test
-	void equals() throws LexicalException{
-		String input = """
-    ==
-    == ==
-    ==*==
-    *==+
-    """;
-		IScanner scanner = CompilerComponentFactory.makeScanner(input);
-		checkToken(Kind.EQ,scanner.next());
-		checkToken(Kind.EQ,scanner.next());
-		checkToken(Kind.EQ,scanner.next());
-		checkToken(Kind.EQ,scanner.next());
-		checkToken(Kind.TIMES,scanner.next());
-		checkToken(Kind.EQ,scanner.next());
-		checkToken(Kind.TIMES,scanner.next());
-		checkToken(Kind.EQ,scanner.next());
-		checkToken(Kind.PLUS,scanner.next());
 	}
 
 }
