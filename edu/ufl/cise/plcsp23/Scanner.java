@@ -338,6 +338,7 @@ public class Scanner implements IScanner {
                 case IN_STRING -> {
                     if (ch == '\"') {
                         int length = pos - tokenStart;
+                        pos++;
                         return new StringLitToken(tokenStart, length, inputChars, line, column);
                     }
                     else if (ch == '\\') {
@@ -358,6 +359,9 @@ public class Scanner implements IScanner {
                         }
                         else if (ch == 'r') {
                             pos++;
+                        }
+                        else {
+                            error("\\ followed by illegal character" );
                         }
                     }
                     else {

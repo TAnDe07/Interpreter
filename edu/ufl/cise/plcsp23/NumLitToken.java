@@ -27,7 +27,7 @@ public class NumLitToken implements INumLitToken {
 
     @Override
     public SourceLocation getSourceLocation() {
-        return null;
+        return new IToken.SourceLocation(line, column);
     }
 
     @Override
@@ -37,7 +37,9 @@ public class NumLitToken implements INumLitToken {
 
     @Override
     public String getTokenString() {
-        return source;
+        String value = new String(source);
+        value = value.substring(pos, pos + length);
+        return value;
     }
 }
 

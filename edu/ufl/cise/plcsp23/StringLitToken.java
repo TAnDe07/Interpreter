@@ -23,22 +23,47 @@ public class StringLitToken implements IStringLitToken {
         if (length == 2) {
             return "";
         }
-        String string = getTokenString();
-        String value = string.substring(pos + 1, pos + length);
 
-        value = value.replaceAll("\\b", "\b");
-        value = value.replaceAll("\\t", "\t");// changing it to /b instead of /t
-        value = value.replaceAll("\\n", "\n");
-        value = value.replaceAll("\\r", "\r");
-        value = value.replaceAll("\\\"", "\"");
-        value = value.replaceAll("\\\\", "\\\\");
+        String value = getTokenString();
+        value = value.substring(pos + 1, pos + length);
 
-        return value;
+        String newValue = "";
+
+        for (int i = 0; i < value.length(); i++) {
+            if (value.charAt(i) == '\\') {
+                if ((i + 1) < value.length()) {
+                    if (value.charAt(i + 1) == 'b') {
+                        newValue += "\b";
+                    }
+                    else if (value.charAt(i + 1) == 't') {
+                        newValue += "\t";
+                    }
+                    else if (value.charAt(i + 1) == 'n') {
+                        newValue += "\n";
+                    }
+                    else if (value.charAt(i + 1) == 'r') {
+                        newValue += "\r";
+                    }
+                    else if (value.charAt(i + 1) == '\'') {
+                        newValue += "\'";
+                    }
+                    else if (value.charAt(i + 1) == '\\') {
+                        newValue += "\\";
+                    }
+                }
+                i++;
+            }
+            else {
+                newValue += value.charAt(i);
+            }
+        }
+
+        return newValue;
     }
 
     @Override
     public SourceLocation getSourceLocation() {
-        return null;
+        return new IToken.SourceLocation(line, column);
     }
 
     @Override
@@ -49,6 +74,7 @@ public class StringLitToken implements IStringLitToken {
     @Override
     public String getTokenString() {
         String value = new String(source);
+        value = value.substring(pos, pos + 1 + length );
 
         return value;
     }

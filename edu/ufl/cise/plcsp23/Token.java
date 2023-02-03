@@ -25,7 +25,7 @@ public class Token implements IToken {
 
     public IToken.SourceLocation getSourceLocation() {
         return new IToken.SourceLocation(line, column);
-    } // send help idk
+    }
 
     public Kind getKind() {
         return kind;
@@ -37,5 +37,9 @@ public class Token implements IToken {
         return value;
     }
 
-    @Override public String toString() {return "";} // idk
+    @Override public String toString() {
+        String value = new String(source);
+
+        return value;
+    }
 }
