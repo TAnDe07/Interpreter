@@ -32,7 +32,9 @@ public class Token implements IToken {
     }
 
     public String getTokenString() {
-        return new String(source);
+        String value = new String(source);
+        value = value.substring(pos, pos + length);
+        return value;
     }
 
     @Override public String toString() {return "";} // idk

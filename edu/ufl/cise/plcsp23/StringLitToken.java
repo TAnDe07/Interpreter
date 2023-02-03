@@ -11,7 +11,7 @@ public class StringLitToken implements IStringLitToken {
 
     public StringLitToken(int pos, int length, char[] source, int line, int column) {
         super();
-        kind = Token.Kind.NUM_LIT;
+        kind = Kind.STRING_LIT;
         this.pos = pos;
         this.length = length;
         this.source = source;
@@ -25,13 +25,13 @@ public class StringLitToken implements IStringLitToken {
         }
         String string = getTokenString();
         String value = string.substring(pos + 1, pos + length);
-        String temp = "\\\\";
-        value.replaceAll(temp + 'b', "\b");
-        value.replaceAll(temp + 't', "\t");
-        value.replaceAll(temp + 'n', "\n");
-        value.replaceAll(temp + 'r', "\r");
-        value.replaceAll(temp + '\"', "\"");
-        value.replaceAll(temp + "\\\\", "\\");
+
+        value = value.replaceAll("\\b", "\b");
+        value = value.replaceAll("\\t", "\t");// changing it to /b instead of /t
+        value = value.replaceAll("\\n", "\n");
+        value = value.replaceAll("\\r", "\r");
+        value = value.replaceAll("\\\"", "\"");
+        value = value.replaceAll("\\\\", "\\\\");
 
         return value;
     }

@@ -315,7 +315,7 @@ public class Scanner implements IScanner {
                         //current char belongs to next token, so don't get next char
                         int length = pos - tokenStart;
                         //determine if this is a reserved word. If not, it is an ident.
-                        String text = input.substring(tokenStart, pos - 1);
+                        String text = input.substring(tokenStart, pos);
                         Token.Kind kind = reserved.get(text);
                         if (kind == null){ kind = Token.Kind.IDENT; }
                         return new Token(kind, tokenStart, length, inputChars, line, column);
@@ -335,7 +335,24 @@ public class Scanner implements IScanner {
                         return new StringLitToken(tokenStart, length, inputChars, line, column);
                     }
                     else if (ch == '\\') {
-                        error("lone \\ located in string");
+                        pos++;
+                        ch = inputChars[pos];
+                        if (ch == '\\') {
+                            error("lone \\ located in string");
+                        }
+                        else if (ch == 't') {
+                            pos++;
+                        }
+                        else if (ch == 'b') {
+                            pos++;
+                        }
+                        else if (ch == 'n') {
+                            line++;
+                            pos++;
+                        }
+                        else if (ch == 'r') {
+                            pos++;
+                        }
                     }
                     else {
                         if (ch == '\n') {

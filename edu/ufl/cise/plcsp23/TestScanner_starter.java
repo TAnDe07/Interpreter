@@ -194,6 +194,7 @@ class TestScanner_starter {
 
 	@Test
 	void illegalEscape() throws LexicalException {
+		//problem in string getValue
 		String input = """
 				"\\t"
 				"\\k"
