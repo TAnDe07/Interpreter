@@ -2,7 +2,7 @@ package edu.ufl.cise.plcsp23;
 
 public class StringLitToken implements IStringLitToken {
 
-    String getValue() {
+    public String getValue() {
         return null;
     }
 
