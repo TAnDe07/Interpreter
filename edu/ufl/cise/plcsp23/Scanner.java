@@ -320,7 +320,7 @@ public class Scanner implements IScanner {
                         Token.Kind kind = reserved.get(text);
                         if (kind == null){ kind = Token.Kind.IDENT; }
                         int column2 = column;
-                        column = column + length;
+                        column += length;
                         return new Token(kind, tokenStart, length, inputChars, line, column2);
                     }
                 }
