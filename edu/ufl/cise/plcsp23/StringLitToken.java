@@ -20,12 +20,9 @@ public class StringLitToken implements IStringLitToken {
     }
 
     public String getValue() {
-        if (length == 2) {
-            return "";
-        }
 
         String value = getTokenString();
-        value = value.substring(pos + 1, pos + length);
+        value = value.substring(1, length);
 
         String newValue = "";
 
@@ -44,8 +41,8 @@ public class StringLitToken implements IStringLitToken {
                     else if (value.charAt(i + 1) == 'r') {
                         newValue += "\r";
                     }
-                    else if (value.charAt(i + 1) == '\'') {
-                        newValue += "\'";
+                    else if (value.charAt(i + 1) == '\"') {
+                        newValue += "\"";
                     }
                     else if (value.charAt(i + 1) == '\\') {
                         newValue += "\\";

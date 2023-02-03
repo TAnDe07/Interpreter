@@ -22,7 +22,7 @@ public class Scanner implements IScanner {
 
         pos = 0;
         line = 1;
-        column = 0;
+        column = 1;
         ch = inputChars[0];
     }
 
@@ -79,7 +79,6 @@ public class Scanner implements IScanner {
 
     private IToken scanToken() throws LexicalException {
         State state = State.START;
-        column++;
         int tokenStart = -1;
         while(true) {
             ch = inputChars[pos];
@@ -93,16 +92,12 @@ public class Scanner implements IScanner {
                         // whitespace
                         case ' ', '\r', '\t', '\f' -> {
                             pos++; // whitespace, ignore
-                            if (column == 0) {
-                                column += 2;
-                            }
-                            else {
-                                column++;
-                            }
+                            column++;
+
                         }
                         case '\n' -> {  // newline, increment line but otherwise ignore
                             line++;
-                            column = 0;
+                            column = 1;
                             pos++;
                         }
                         //one offs
@@ -324,7 +319,9 @@ public class Scanner implements IScanner {
                         String text = input.substring(tokenStart, pos);
                         Token.Kind kind = reserved.get(text);
                         if (kind == null){ kind = Token.Kind.IDENT; }
-                        return new Token(kind, tokenStart, length, inputChars, line, column);
+                        int column2 = column;
+                        column = column + length;
+                        return new Token(kind, tokenStart, length, inputChars, line, column2);
                     }
                 }
                 case COMMENT -> {
@@ -345,7 +342,18 @@ public class Scanner implements IScanner {
                         pos++;
                         ch = inputChars[pos];
                         if (ch == '\\') {
-                            error("lone \\ located in string");
+                            pos++;
+                            ch = inputChars[pos];
+                            if ( ch == '\\') {
+                                pos++;
+                                ch = inputChars[pos];
+                                if ( ch == '\\') {
+                                    pos++;
+                                }
+                                else {
+                                    error("lone \\ located in string");
+                                }
+                            }
                         }
                         else if (ch == 't') {
                             pos++;
@@ -358,6 +366,9 @@ public class Scanner implements IScanner {
                             pos++;
                         }
                         else if (ch == 'r') {
+                            pos++;
+                        }
+                        else if (ch == '\"') {
                             pos++;
                         }
                         else {
