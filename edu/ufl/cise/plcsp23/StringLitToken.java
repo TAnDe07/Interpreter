@@ -20,7 +20,11 @@ public class StringLitToken implements IStringLitToken {
     }
 
     public String getValue() {
-        String value = getTokenString();
+        if (length == 2) {
+            return "";
+        }
+        String string = getTokenString();
+        String value = string.substring(pos, pos + (length - 2));
         String temp = "\\\\";
         value.replaceAll(temp + 'b', "\b");
         value.replaceAll(temp + 't', "\t");
@@ -44,15 +48,7 @@ public class StringLitToken implements IStringLitToken {
 
     @Override
     public String getTokenString() {
-        String value = "";
-
-        if (length == 2) {
-            return value;
-        }
-
-        String string = new String(source);
-
-        value = string.substring(pos, pos + (length - 2));
+        String value = new String(source);
 
         return value;
     }

@@ -1,9 +1,6 @@
 package edu.ufl.cise.plcsp23;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class Scanner implements IScanner {
 
@@ -177,7 +174,7 @@ public class Scanner implements IScanner {
                             pos++;
                         }
                         // extended cases
-                        case '1','2','3','4','5','6','7','8','9' -> {//char is nonzero digit
+                        case '1','2','3','4','5','6','7','8','9' -> { //char is nonzero digit
                             state = State.IN_NUM_LIT;
                             pos++;
                         }
@@ -274,7 +271,7 @@ public class Scanner implements IScanner {
 
                         String value = "";
                         int length2 = length;
-                        int pos2 = pos;
+                        int pos2 = tokenStart;
                         while (length2 > 0){
                             value += inputChars[pos2];
                             pos2++;
@@ -298,7 +295,7 @@ public class Scanner implements IScanner {
                         //current char belongs to next token, so don't get next char
                         int length = pos - tokenStart;
                         //determine if this is a reserved word. If not, it is an ident.
-                        String text = input.substring(tokenStart, tokenStart + length);
+                        String text = input.substring(tokenStart, pos);
                         Token.Kind kind = reserved.get(text);
                         if (kind == null){ kind = Token.Kind.IDENT; }
                         return new Token(kind, tokenStart, length, inputChars, line, column);
@@ -318,7 +315,7 @@ public class Scanner implements IScanner {
                         return new StringLitToken(tokenStart, length, inputChars, line, column);
                     }
                     else if (ch == '\\') {
-                        error("\\ located in string");
+                        error("lone \\ located in string");
                     }
                     else {
                         if (ch == '\n') {
