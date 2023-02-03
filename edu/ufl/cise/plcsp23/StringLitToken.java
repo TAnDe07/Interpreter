@@ -24,7 +24,7 @@ public class StringLitToken implements IStringLitToken {
             return "";
         }
         String string = getTokenString();
-        String value = string.substring(pos, pos + (length - 2));
+        String value = string.substring(pos + 1, pos + length);
         String temp = "\\\\";
         value.replaceAll(temp + 'b', "\b");
         value.replaceAll(temp + 't', "\t");

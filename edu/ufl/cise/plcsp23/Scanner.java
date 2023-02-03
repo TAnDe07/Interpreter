@@ -295,11 +295,14 @@ public class Scanner implements IScanner {
                             length2--;
                         }
 
-                        long i = Long.parseLong(value);
-
-                        if (i > Integer.MAX_VALUE) {
+                        try {
+                            long i = Long.parseLong(value);
+                        }
+                        catch (NumberFormatException nfe) {
                             error("Number too large");
                         }
+
+                        long i = Long.parseLong(value);
 
                         return new NumLitToken(tokenStart, length, value, line, column, i);
                     }
@@ -312,7 +315,7 @@ public class Scanner implements IScanner {
                         //current char belongs to next token, so don't get next char
                         int length = pos - tokenStart;
                         //determine if this is a reserved word. If not, it is an ident.
-                        String text = input.substring(tokenStart, pos);
+                        String text = input.substring(tokenStart, pos - 1);
                         Token.Kind kind = reserved.get(text);
                         if (kind == null){ kind = Token.Kind.IDENT; }
                         return new Token(kind, tokenStart, length, inputChars, line, column);

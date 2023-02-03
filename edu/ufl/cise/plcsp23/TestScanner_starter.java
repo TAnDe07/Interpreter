@@ -153,6 +153,30 @@ class TestScanner_starter {
 
 
 
+	@Test // works
+	void numLits1() throws LexicalException {
+		String input = """
+				123
+				05 240
+				""";
+		IScanner scanner = CompilerComponentFactory.makeScanner(input);
+		checkNUM_LIT(123, scanner.next());
+		checkNUM_LIT(0, scanner.next());
+		checkNUM_LIT(5, scanner.next());
+		checkNUM_LIT(240, scanner.next());
+		checkEOF(scanner.next());
+	}
+
+	@Test // works
+		//Too large should still throw LexicalException
+	void numLitTooBig() throws LexicalException {
+		String input = "999999999999999999999";
+		IScanner scanner = CompilerComponentFactory.makeScanner(input);
+		assertThrows(LexicalException.class, () -> {
+			scanner.next();
+		});
+	}
+
 	@Test
 	void stringLiterals1() throws LexicalException {
 		String input = """
@@ -194,30 +218,6 @@ class TestScanner_starter {
 		});
 	}
 
-
-	@Test
-	void numLits1() throws LexicalException {
-		String input = """
-				123
-				05 240
-				""";
-		IScanner scanner = CompilerComponentFactory.makeScanner(input);
-		checkNUM_LIT(123, scanner.next());
-		checkNUM_LIT(0, scanner.next());
-		checkNUM_LIT(5, scanner.next());
-		checkNUM_LIT(240, scanner.next());
-		checkEOF(scanner.next());
-	}
-
-	@Test
-	//Too large should still throw LexicalException
-	void numLitTooBig() throws LexicalException {
-		String input = "999999999999999999999";
-		IScanner scanner = CompilerComponentFactory.makeScanner(input);
-		assertThrows(LexicalException.class, () -> {
-			scanner.next();
-		});
-	}
 
 
 	@Test
