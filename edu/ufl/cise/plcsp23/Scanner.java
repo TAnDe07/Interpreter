@@ -362,7 +362,6 @@ public class Scanner implements IScanner {
                             pos++;
                         }
                         else if (ch == 'n') {
-                            line++;
                             pos++;
                         }
                         else if (ch == 'r') {
@@ -375,10 +374,10 @@ public class Scanner implements IScanner {
                             error("\\ followed by illegal character" );
                         }
                     }
+                    else if (ch == '\n'){
+                        error("\\ followed by illegal character" );
+                    }
                     else {
-                        if (ch == '\n') {
-                            line++;
-                        }
                         pos++;
                     }
                 }
