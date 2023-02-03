@@ -30,8 +30,8 @@ public class Scanner implements IScanner {
     }
 
     @Override
-    public Token next() throws LexicalException {
-        Token token = scanToken();
+    public IToken next() throws LexicalException {
+        IToken token = scanToken();
         return token;
     }
 
@@ -39,18 +39,50 @@ public class Scanner implements IScanner {
         START,
         HAVE_EQ,
         HAVE_AST,
+        HAVE_LESS,
+        HAVE_GREAT,
+        HAVE_AND,
+        HAVE_OR,
+        EXCHANGE,
         IN_IDENT,
         IN_NUM_LIT,
-        IN_STRING
+        IN_STRING,
+        COMMENT
     }
 
     static { // add reserved words
-        reserved = new HashMap<String, Token.Kind>();
+        reserved = new HashMap<>();
+        reserved.put("image", Token.Kind.RES_image);
+        reserved.put("pixel", Token.Kind.RES_pixel);
+        reserved.put("int", Token.Kind.RES_int);
+        reserved.put("string", Token.Kind.RES_string);
+        reserved.put("void", Token.Kind.RES_void);
+        reserved.put("nil", Token.Kind.RES_nil);
+        reserved.put("load", Token.Kind.RES_load);
+        reserved.put("display", Token.Kind.RES_display);
+        reserved.put("write", Token.Kind.RES_write);
+        reserved.put("x", Token.Kind.RES_x);
+        reserved.put("y", Token.Kind.RES_y);
+        reserved.put("a", Token.Kind.RES_a);
+        reserved.put("r", Token.Kind.RES_r);
+        reserved.put("X", Token.Kind.RES_X);
+        reserved.put("Y", Token.Kind.RES_Y);
+        reserved.put("Z", Token.Kind.RES_Z);
+        reserved.put("x_cart", Token.Kind.RES_x_cart);
+        reserved.put("y_cart", Token.Kind.RES_y_cart);
+        reserved.put("a_polar", Token.Kind.RES_a_polar);
+        reserved.put("r_polar", Token.Kind.RES_r_polar);
+        reserved.put("rand", Token.Kind.RES_rand);
+        reserved.put("sin", Token.Kind.RES_sin);
+        reserved.put("cos", Token.Kind.RES_cos);
+        reserved.put("atan", Token.Kind.RES_atan);
         reserved.put("if", Token.Kind.RES_if);
+        reserved.put("while", Token.Kind.RES_while);
     }
 
-    private Token scanToken() throws LexicalException {
+    private IToken scanToken() throws LexicalException {
         State state = State.START;
+        column++;
         int tokenStart = -1;
         while(true) {
             switch (state) {
@@ -60,80 +92,239 @@ public class Scanner implements IScanner {
                         case 0 -> { // EOF
                             return new Token(Token.Kind.EOF, tokenStart, 0, inputChars, line, column);
                         }
-                        case ' ', '\r', '\t', '\f' -> next();
-                        case '\n' -> {
+                        // whitespace
+                        case ' ', '\r', '\t', '\f' -> {
+                            pos++; // whitespace, ignore
+                        }
+                        case '\n' -> {  // newline, increment line but otherwise ignore
                             line++;
                             column = 0;
+                            pos++;
                         }
+                        //one offs
                         case '+' -> {
                             return new Token(Token.Kind.PLUS, tokenStart, 1, inputChars, line, column);
                         }
-                        case '0' -> {
-                            return new Token(Token.Kind.NUM_LIT, tokenStart, 1, inputChars, line, column);
+                        case '.' -> {
+                            return new Token(Token.Kind.DOT, tokenStart, 1, inputChars, line, column);
                         }
+                        case ',' -> {
+                            return new Token(Token.Kind.COMMA, tokenStart, 1, inputChars, line, column);
+                        }
+                        case '?' -> {
+                            return new Token(Token.Kind.QUESTION, tokenStart, 1, inputChars, line, column);
+                        }
+                        case ':' -> {
+                            return new Token(Token.Kind.COLON, tokenStart, 1, inputChars, line, column);
+                        }
+                        case '(' -> {
+                            return new Token(Token.Kind.LPAREN, tokenStart, 1, inputChars, line, column);
+                        }
+                        case ')' -> {
+                            return new Token(Token.Kind.RPAREN, tokenStart, 1, inputChars, line, column);
+                        }
+                        case '[' -> {
+                            return new Token(Token.Kind.LSQUARE, tokenStart, 1, inputChars, line, column);
+                        }
+                        case ']' -> {
+                            return new Token(Token.Kind.RSQUARE, tokenStart, 1, inputChars, line, column);
+                        }
+                        case '{' -> {
+                            return new Token(Token.Kind.LCURLY, tokenStart, 1, inputChars, line, column);
+                        }
+                        case '}' -> {
+                            return new Token(Token.Kind.RCURLY, tokenStart, 1, inputChars, line, column);
+                        }
+                        case '!' -> {
+                            return new Token(Token.Kind.BANG, tokenStart, 1, inputChars, line, column);
+                        }
+                        case '-' -> {
+                            return new Token(Token.Kind.MINUS, tokenStart, 1, inputChars, line, column);
+                        }
+                        case '/' -> {
+                            return new Token(Token.Kind.DIV, tokenStart, 1, inputChars, line, column);
+                        }
+                        case '%' -> {
+                            return new Token(Token.Kind.MOD, tokenStart, 1, inputChars, line, column);
+                        }
+                        case '0' -> {
+                            long i = 0;
+                            return new NumLitToken(tokenStart, 1, "0", line, column, i);
+                        }
+                        // 2-3 chars
                         case '*' -> {
                             state = state.HAVE_AST;
-                            next();
-                            //return new Token(Token.Kind.TIMES, tokenStart, 1, inputChars, line, column);
+                            pos++;
                         }
                         case '=' -> {
                             state = state.HAVE_EQ;
-                            next();
+                            pos++;
                         }
+                        case '<' -> {
+                            state = state.HAVE_LESS;
+                            pos++;
+                        }
+                        case '>' -> {
+                            state = state.HAVE_GREAT;
+                            pos++;
+                        }
+                        case '&' -> {
+                            state = state.HAVE_AND;
+                            pos++;
+                        }
+                        case '|' -> {
+                            state = state.HAVE_OR;
+                            pos++;
+                        }
+                        // extended cases
                         case '1','2','3','4','5','6','7','8','9' -> {//char is nonzero digit
                             state = State.IN_NUM_LIT;
-                            next();
+                            pos++;
+                        }
+                        case '~' -> {
+                            state = state.COMMENT;
+                            pos++;
+                        }
+                        case '\"' -> {
+                            state = state.IN_STRING;
+                            pos++;
                         }
                         default -> {
                             if (isLetter(ch)) {
                                 state = State.IN_IDENT;
-                                next();
+                                pos++;
                             }
                             else error("illegal char with ascii value: " + (int)ch);}
                     }
                 }
                 case HAVE_EQ -> {
                     if (ch == '=') {
-                        state = state.START;
-                        next();
+                        pos++;
                         return new Token(Token.Kind.EQ, tokenStart, 2, inputChars, line, column);
                     }
                     else {
-                        error("expected =");
+                        return new Token(Token.Kind.ASSIGN, tokenStart, 2, inputChars, line, column);
                     }
                 }
                 case HAVE_AST -> {
                     if (ch == '*') {
-                        state = state.START;
-                        next();
+                        pos++;
                         return new Token(Token.Kind.EXP, tokenStart, 2, inputChars, line, column);
                     }
                     else {
-                        error("expected =");
+                        return new Token(Token.Kind.TIMES, tokenStart, 2, inputChars, line, column);
+                    }
+                }
+                case HAVE_LESS -> {
+                    if (ch == '=') {
+                        pos++;
+                        return new Token(Token.Kind.LE, tokenStart, 2, inputChars, line, column);
+                    }
+                    else if (ch == '-') {
+                        state = state.EXCHANGE;
+                        pos++;
+                    }
+                    else {
+                        return new Token(Token.Kind.LT, tokenStart, 2, inputChars, line, column);
+                    }
+                }
+                case EXCHANGE -> {
+                    if (ch == '>') {
+                        pos++;
+                        return new Token(Token.Kind.EXCHANGE, tokenStart, 2, inputChars, line, column);
+                    }
+                    else {
+                        error("expected >");
+                    }
+                }
+                case HAVE_GREAT -> {
+                    if (ch == '=') {
+                        pos++;
+                        return new Token(Token.Kind.GE, tokenStart, 2, inputChars, line, column);
+                    }
+                    else {
+                        return new Token(Token.Kind.GT, tokenStart, 2, inputChars, line, column);
+                    }
+                }
+                case HAVE_AND -> {
+                    if (ch == '&') {
+                        pos++;
+                        return new Token(Token.Kind.AND, tokenStart, 2, inputChars, line, column);
+                    }
+                    else {
+                        return new Token(Token.Kind.BITAND, tokenStart, 2, inputChars, line, column);
+                    }
+                }
+                case HAVE_OR -> {
+                    if (ch == '|') {
+                        pos++;
+                        return new Token(Token.Kind.OR, tokenStart, 2, inputChars, line, column);
+                    }
+                    else {
+                        return new Token(Token.Kind.BITOR, tokenStart, 2, inputChars, line, column);
                     }
                 }
                 case IN_NUM_LIT -> {
-                    if (isDigit(ch)) {//char is digit, continue in IN_NUM_LIT state
-                        next();
+                    if (isDigit(ch)) { //char is digit, continue in IN_NUM_LIT state
+                        pos++;
                     }
                     else {
                         //current char belongs to next token, so don't get next char
                         int length = pos - tokenStart;
-                        return new Token(Token.Kind.NUM_LIT, tokenStart, length, inputChars, line, column);
+
+                        String value = "";
+                        int length2 = length;
+                        int pos2 = pos;
+                        while (length2 > 0){
+                            value += inputChars[pos2];
+                            pos2++;
+                            length2--;
+                        }
+
+                        long i = Integer.parseInt(value);
+
+                        if (i > Integer.MAX_VALUE) {
+                            error("Number too large");
+                        }
+
+                        return new NumLitToken(tokenStart, length, value, line, column, i);
                     }
                 }
                 case IN_IDENT -> {
                     if (isIdentStart(ch) || isDigit(ch)) {
-                        next();
+                        pos++;
                     }
                     else {
                         //current char belongs to next token, so don't get next char
-                        int length = pos-tokenStart;
+                        int length = pos - tokenStart;
                         //determine if this is a reserved word. If not, it is an ident.
                         String text = input.substring(tokenStart, tokenStart + length);
                         Token.Kind kind = reserved.get(text);
                         if (kind == null){ kind = Token.Kind.IDENT; }
                         return new Token(kind, tokenStart, length, inputChars, line, column);
+                    }
+                }
+                case COMMENT -> {
+                    if (ch == '\n') {
+                        state = State.START;
+                        line++;
+                        column = 0;
+                    }
+                    pos++;
+                }
+                case IN_STRING -> {
+                    if (ch == '\"') {
+                        int length = pos - tokenStart;
+                        return new StringLitToken(tokenStart, length, inputChars, line, column);
+                    }
+                    else if (ch == '\\') {
+                        error("\\ located in string");
+                    }
+                    else {
+                        if (ch == '\n') {
+                            line++;
+                        }
+                        pos++;
                     }
                 }
                 default -> {
@@ -156,6 +347,6 @@ public class Scanner implements IScanner {
     private void error(String message) throws LexicalException {
         throw new LexicalException("Error at pos " + pos + ": " + message);
     }
-    
+
 }
 
