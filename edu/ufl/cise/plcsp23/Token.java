@@ -24,7 +24,7 @@ public class Token implements IToken {
     }
 
     public IToken.SourceLocation getSourceLocation() {
-        return null;
+        return new IToken.SourceLocation(line, column);
     } // send help idk
 
     public Kind getKind() {

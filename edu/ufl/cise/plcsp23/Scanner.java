@@ -21,7 +21,7 @@ public class Scanner implements IScanner {
         }
 
         pos = 0;
-        line = 0;
+        line = 1;
         column = 0;
         ch = inputChars[0];
     }
@@ -93,6 +93,12 @@ public class Scanner implements IScanner {
                         // whitespace
                         case ' ', '\r', '\t', '\f' -> {
                             pos++; // whitespace, ignore
+                            if (column == 0) {
+                                column += 2;
+                            }
+                            else {
+                                column++;
+                            }
                         }
                         case '\n' -> {  // newline, increment line but otherwise ignore
                             line++;
@@ -325,7 +331,7 @@ public class Scanner implements IScanner {
                     if (ch == '\n') {
                         state = State.START;
                         line++;
-                        column = 0;
+                        column = 1;
                     }
                     pos++;
                 }
