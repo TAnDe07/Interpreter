@@ -93,7 +93,6 @@ public class Scanner implements IScanner {
                         case ' ', '\r', '\t', '\f' -> {
                             pos++; // whitespace, ignore
                             column++;
-
                         }
                         case '\n' -> {  // newline, increment line but otherwise ignore
                             line++;
@@ -368,19 +367,24 @@ public class Scanner implements IScanner {
                     if (ch == '\"') {
                         int length = pos - tokenStart;
                         pos++;
-                        return new StringLitToken(tokenStart, length, inputChars, line, column);
+                        column++;
+                        return new StringLitToken(tokenStart, length, inputChars, line, column - length);
                     }
                     else if (ch == '\\') {
                         pos++;
+                        column++;
                         ch = inputChars[pos];
                         if (ch == '\\') {
                             pos++;
+                            column++;
                             ch = inputChars[pos];
                             if ( ch == '\\') {
                                 pos++;
+                                column++;
                                 ch = inputChars[pos];
                                 if ( ch == '\\') {
                                     pos++;
+                                    column++;
                                 }
                                 else {
                                     error("lone \\ located in string");
@@ -389,18 +393,23 @@ public class Scanner implements IScanner {
                         }
                         else if (ch == 't') {
                             pos++;
+                            column++;
                         }
                         else if (ch == 'b') {
                             pos++;
+                            column++;
                         }
                         else if (ch == 'n') {
                             pos++;
+                            column++;
                         }
                         else if (ch == 'r') {
                             pos++;
+                            column++;
                         }
                         else if (ch == '\"') {
                             pos++;
+                            column++;
                         }
                         else {
                             error("\\ followed by illegal character" );
@@ -411,6 +420,7 @@ public class Scanner implements IScanner {
                     }
                     else {
                         pos++;
+                        column++;
                     }
                 }
                 default -> {
