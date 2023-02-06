@@ -386,5 +386,84 @@ class TestScanner_starter {
 			scanner3.next();
 		});
 	}
+
+	// tests created by us
+
+	// test if single char inputs correctly increment column
+	@Test
+	void singleLocation() throws LexicalException {
+		String input = """
+				? what
+				""";
+		IScanner scanner = CompilerComponentFactory.makeScanner(input);
+		checkToken(Kind.QUESTION, scanner.next());
+		checkToken(Kind.IDENT, "what", new SourceLocation(1, 3), scanner.next());
+		checkEOF(scanner.next());
+	}
+
+	// test if 2 & 3 character inputs correctly increment column
+	@Test
+	void doubleLocation() throws LexicalException {
+		String input = """
+				* what
+				** what
+				<-> what
+				""";
+		IScanner scanner = CompilerComponentFactory.makeScanner(input);
+		checkToken(Kind.TIMES, scanner.next());
+		checkToken(Kind.IDENT, "what", new SourceLocation(1, 3), scanner.next());
+		checkToken(Kind.EXP, scanner.next());
+		checkToken(Kind.IDENT, "what", new SourceLocation(2, 4), scanner.next());
+		checkToken(Kind.EXCHANGE, scanner.next());
+		checkToken(Kind.IDENT, "what", new SourceLocation(3, 5), scanner.next());
+		checkEOF(scanner.next());
+	}
+
+	// test if strings correctly increment column
+	@Test
+	void stringLocation() throws LexicalException {
+		String input = """
+				"hello" what
+				"\t" "what"
+				""";
+		IScanner scanner = CompilerComponentFactory.makeScanner(input);
+		checkString(input.substring(0, 7), "hello", new SourceLocation(1, 1), scanner.next());
+		checkToken(Kind.IDENT, "what", new SourceLocation(1, 9), scanner.next());
+		checkString(input.substring(13, 16), "\t", new SourceLocation(2, 1), scanner.next());
+		checkString(input.substring(18, 23), "what", new SourceLocation(2, 5), scanner.next());
+		checkEOF(scanner.next());
+	}
+
+	// test if numbers correctly increment column
+	@Test
+	void numLocation() throws LexicalException {
+		String input = """
+				0 123
+				4  567what
+				""";
+		IScanner scanner = CompilerComponentFactory.makeScanner(input);
+		checkNUM_LIT(0, scanner.next());
+		checkNUM_LIT(123, scanner.next());
+		checkNUM_LIT(4, scanner.next());
+		checkNUM_LIT(567, scanner.next());
+		checkToken(Kind.IDENT, "what", new SourceLocation(2, 7), scanner.next());
+		checkEOF(scanner.next());
+	}
+
+	// test if identifiers & reserved words correctly increment column
+	@Test
+	void identLocation() throws LexicalException {
+		String input = """
+				what what
+				if what
+				""";
+		IScanner scanner = CompilerComponentFactory.makeScanner(input);
+		checkToken(Kind.IDENT, "what", new SourceLocation(1, 1), scanner.next());
+		checkToken(Kind.IDENT, "what", new SourceLocation(1, 6), scanner.next());
+		checkToken(Kind.RES_if, scanner.next());
+		checkToken(Kind.IDENT, "what", new SourceLocation(2, 4), scanner.next());
+		checkEOF(scanner.next());
+	}
+
 }
 
