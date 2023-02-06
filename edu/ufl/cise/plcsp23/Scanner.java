@@ -228,7 +228,7 @@ public class Scanner implements IScanner {
                             pos++;
                         }
                         default -> {
-                            if (isLetter(ch)) {
+                            if (isIdentStart(ch)) {
                                 state = State.IN_IDENT;
                                 pos++;
                             }
@@ -242,7 +242,7 @@ public class Scanner implements IScanner {
                         return new Token(Token.Kind.EQ, tokenStart, 2, inputChars, line, column - 2);
                     }
                     else {
-                        return new Token(Token.Kind.ASSIGN, tokenStart, 2, inputChars, line, column - 1);
+                        return new Token(Token.Kind.ASSIGN, tokenStart, 1, inputChars, line, column - 1);
                     }
                 }
                 case HAVE_AST -> {
@@ -252,7 +252,7 @@ public class Scanner implements IScanner {
                         return new Token(Token.Kind.EXP, tokenStart, 2, inputChars, line, column - 2);
                     }
                     else {
-                        return new Token(Token.Kind.TIMES, tokenStart, 2, inputChars, line, column - 1);
+                        return new Token(Token.Kind.TIMES, tokenStart, 1, inputChars, line, column - 1);
                     }
                 }
                 case HAVE_LESS -> {
@@ -267,7 +267,7 @@ public class Scanner implements IScanner {
                         column++;
                     }
                     else {
-                        return new Token(Token.Kind.LT, tokenStart, 2, inputChars, line, column - 1);
+                        return new Token(Token.Kind.LT, tokenStart, 1, inputChars, line, column - 1);
                     }
                 }
                 case EXCHANGE -> {
@@ -287,7 +287,7 @@ public class Scanner implements IScanner {
                         return new Token(Token.Kind.GE, tokenStart, 2, inputChars, line, column - 2);
                     }
                     else {
-                        return new Token(Token.Kind.GT, tokenStart, 2, inputChars, line, column - 1);
+                        return new Token(Token.Kind.GT, tokenStart, 1, inputChars, line, column - 1);
                     }
                 }
                 case HAVE_AND -> {
@@ -297,7 +297,7 @@ public class Scanner implements IScanner {
                         return new Token(Token.Kind.AND, tokenStart, 2, inputChars, line, column - 2);
                     }
                     else {
-                        return new Token(Token.Kind.BITAND, tokenStart, 2, inputChars, line, column - 1);
+                        return new Token(Token.Kind.BITAND, tokenStart, 1, inputChars, line, column - 1);
                     }
                 }
                 case HAVE_OR -> {
@@ -307,7 +307,7 @@ public class Scanner implements IScanner {
                         return new Token(Token.Kind.OR, tokenStart, 2, inputChars, line, column - 2);
                     }
                     else {
-                        return new Token(Token.Kind.BITOR, tokenStart, 2, inputChars, line, column - 1);
+                        return new Token(Token.Kind.BITOR, tokenStart, 1, inputChars, line, column - 1);
                     }
                 }
                 case IN_NUM_LIT -> {
@@ -424,11 +424,8 @@ public class Scanner implements IScanner {
     private boolean isDigit(int ch) {
         return '0' <= ch && ch <= '9';
     }
-    private boolean isLetter(int ch) {
-        return ('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z');
-    }
     private boolean isIdentStart(int ch) {
-        return isLetter(ch) || (ch == '_');
+        return ('A' <= ch && ch <= 'Z') || ('a' <= ch && ch <= 'z') || ch == '_';
     }
     private void error(String message) throws LexicalException {
         throw new LexicalException("Error at pos " + pos + ": " + message);
