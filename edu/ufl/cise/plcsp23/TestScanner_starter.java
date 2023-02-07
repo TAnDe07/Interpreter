@@ -396,8 +396,7 @@ class TestScanner_starter {
 				? what
 				""";
 		IScanner scanner = CompilerComponentFactory.makeScanner(input);
-		checkToken(Kind.QUESTION, scanner.next());
-		checkToken(Kind.IDENT, "what", new SourceLocation(1, 3), scanner.next());
+		checkToken(Kind.QUESTION, scanner.next());checkToken(Kind.IDENT, "what", new SourceLocation(1, 3), scanner.next());
 		checkEOF(scanner.next());
 	}
 
@@ -430,7 +429,7 @@ class TestScanner_starter {
 		checkString(input.substring(0, 7), "hello", new SourceLocation(1, 1), scanner.next());
 		checkToken(Kind.IDENT, "what", new SourceLocation(1, 9), scanner.next());
 		checkString(input.substring(13, 16), "\t", new SourceLocation(2, 1), scanner.next());
-		checkString(input.substring(18, 23), "what", new SourceLocation(2, 5), scanner.next());
+		checkString(input.substring(17, 23), "what", new SourceLocation(2, 5), scanner.next());
 		checkEOF(scanner.next());
 	}
 

@@ -22,7 +22,7 @@ public class Scanner implements IScanner {
 
         pos = 0;
         line = 1;
-        column = 1;
+        column = 0;
         ch = inputChars[0];
     }
 
@@ -96,90 +96,90 @@ public class Scanner implements IScanner {
                         }
                         case '\n' -> {  // newline, increment line but otherwise ignore
                             line++;
-                            column = 1;
+                            column = 0;
                             pos++;
                         }
                         //one offs
                         case '+' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.PLUS, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.PLUS, tokenStart, 1, inputChars, line, column);
                         }
                         case '.' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.DOT, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.DOT, tokenStart, 1, inputChars, line, column);
                         }
                         case ',' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.COMMA, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.COMMA, tokenStart, 1, inputChars, line, column);
                         }
                         case '?' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.QUESTION, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.QUESTION, tokenStart, 1, inputChars, line, column);
                         }
                         case ':' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.COLON, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.COLON, tokenStart, 1, inputChars, line, column);
                         }
                         case '(' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.LPAREN, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.LPAREN, tokenStart, 1, inputChars, line, column);
                         }
                         case ')' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.RPAREN, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.RPAREN, tokenStart, 1, inputChars, line, column);
                         }
                         case '[' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.LSQUARE, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.LSQUARE, tokenStart, 1, inputChars, line, column);
                         }
                         case ']' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.RSQUARE, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.RSQUARE, tokenStart, 1, inputChars, line, column);
                         }
                         case '{' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.LCURLY, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.LCURLY, tokenStart, 1, inputChars, line, column);
                         }
                         case '}' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.RCURLY, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.RCURLY, tokenStart, 1, inputChars, line, column);
                         }
                         case '!' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.BANG, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.BANG, tokenStart, 1, inputChars, line, column);
                         }
                         case '-' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.MINUS, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.MINUS, tokenStart, 1, inputChars, line, column);
                         }
                         case '/' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.DIV, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.DIV, tokenStart, 1, inputChars, line, column);
                         }
                         case '%' -> {
                             pos++;
                             column++;
-                            return new Token(Token.Kind.MOD, tokenStart, 1, inputChars, line, column - 1);
+                            return new Token(Token.Kind.MOD, tokenStart, 1, inputChars, line, column);
                         }
                         case '0' -> {
                             pos++;
                             column++;
                             long i = 0;
-                            return new NumLitToken(tokenStart, 1, "0", line, column - 1, i);
+                            return new NumLitToken(tokenStart, 1, "0", line, column, i);
                         }
                         // 2-3 chars
                         case '*' -> {
@@ -221,15 +221,18 @@ public class Scanner implements IScanner {
                         case '~' -> {
                             state = state.COMMENT;
                             pos++;
+                            column++;
                         }
                         case '\"' -> {
                             state = state.IN_STRING;
                             pos++;
+                            column++;
                         }
                         default -> {
                             if (isIdentStart(ch)) {
                                 state = State.IN_IDENT;
                                 pos++;
+                                column++;
                             }
                             else error("illegal char with ascii value: " + (int)ch);}
                     }
@@ -238,27 +241,27 @@ public class Scanner implements IScanner {
                     if (ch == '=') {
                         pos++;
                         column++;
-                        return new Token(Token.Kind.EQ, tokenStart, 2, inputChars, line, column - 2);
+                        return new Token(Token.Kind.EQ, tokenStart, 2, inputChars, line, column - 1);
                     }
                     else {
-                        return new Token(Token.Kind.ASSIGN, tokenStart, 1, inputChars, line, column - 1);
+                        return new Token(Token.Kind.ASSIGN, tokenStart, 1, inputChars, line, column);
                     }
                 }
                 case HAVE_AST -> {
                     if (ch == '*') {
                         pos++;
                         column++;
-                        return new Token(Token.Kind.EXP, tokenStart, 2, inputChars, line, column - 2);
+                        return new Token(Token.Kind.EXP, tokenStart, 2, inputChars, line, column - 1);
                     }
                     else {
-                        return new Token(Token.Kind.TIMES, tokenStart, 1, inputChars, line, column - 1);
+                        return new Token(Token.Kind.TIMES, tokenStart, 1, inputChars, line, column);
                     }
                 }
                 case HAVE_LESS -> {
                     if (ch == '=') {
                         pos++;
                         column++;
-                        return new Token(Token.Kind.LE, tokenStart, 2, inputChars, line, column - 2);
+                        return new Token(Token.Kind.LE, tokenStart, 2, inputChars, line, column - 1);
                     }
                     else if (ch == '-') {
                         state = state.EXCHANGE;
@@ -266,14 +269,14 @@ public class Scanner implements IScanner {
                         column++;
                     }
                     else {
-                        return new Token(Token.Kind.LT, tokenStart, 1, inputChars, line, column - 1);
+                        return new Token(Token.Kind.LT, tokenStart, 1, inputChars, line, column);
                     }
                 }
                 case EXCHANGE -> {
                     if (ch == '>') {
                         pos++;
                         column++;
-                        return new Token(Token.Kind.EXCHANGE, tokenStart, 2, inputChars, line, column - 3);
+                        return new Token(Token.Kind.EXCHANGE, tokenStart, 2, inputChars, line, column - 2);
                     }
                     else {
                         error("expected >");
@@ -283,30 +286,30 @@ public class Scanner implements IScanner {
                     if (ch == '=') {
                         pos++;
                         column++;
-                        return new Token(Token.Kind.GE, tokenStart, 2, inputChars, line, column - 2);
+                        return new Token(Token.Kind.GE, tokenStart, 2, inputChars, line, column - 1);
                     }
                     else {
-                        return new Token(Token.Kind.GT, tokenStart, 1, inputChars, line, column - 1);
+                        return new Token(Token.Kind.GT, tokenStart, 1, inputChars, line, column);
                     }
                 }
                 case HAVE_AND -> {
                     if (ch == '&') {
                         pos++;
                         column++;
-                        return new Token(Token.Kind.AND, tokenStart, 2, inputChars, line, column - 2);
+                        return new Token(Token.Kind.AND, tokenStart, 2, inputChars, line, column - 1);
                     }
                     else {
-                        return new Token(Token.Kind.BITAND, tokenStart, 1, inputChars, line, column - 1);
+                        return new Token(Token.Kind.BITAND, tokenStart, 1, inputChars, line, column);
                     }
                 }
                 case HAVE_OR -> {
                     if (ch == '|') {
                         pos++;
                         column++;
-                        return new Token(Token.Kind.OR, tokenStart, 2, inputChars, line, column - 2);
+                        return new Token(Token.Kind.OR, tokenStart, 2, inputChars, line, column - 1);
                     }
                     else {
-                        return new Token(Token.Kind.BITOR, tokenStart, 1, inputChars, line, column - 1);
+                        return new Token(Token.Kind.BITOR, tokenStart, 1, inputChars, line, column);
                     }
                 }
                 case IN_NUM_LIT -> {
@@ -351,7 +354,7 @@ public class Scanner implements IScanner {
                         Token.Kind kind = reserved.get(text);
                         if (kind == null){ kind = Token.Kind.IDENT; }
                         int column2 = column;
-                        column += length;
+                        column += length - 1;
                         return new Token(kind, tokenStart, length, inputChars, line, column2);
                     }
                 }
@@ -359,7 +362,7 @@ public class Scanner implements IScanner {
                     if (ch == '\n') {
                         state = State.START;
                         line++;
-                        column = 1;
+                        column = 0;
                     }
                     pos++;
                 }
