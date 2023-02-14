@@ -654,5 +654,15 @@ x_cart | y_cart | a_polar | r_polar | rand | sin | cos | atan | if | while */
 		checkToken(Kind.IDENT,"whilee", new SourceLocation(2,82), scanner.next());
 	}
 
+	@Test
+	void nonTerminatedString() throws LexicalException {
+		String input = """
+				"abc""";
+		IScanner scanner = CompilerComponentFactory.makeScanner(input);
+		assertThrows(LexicalException.class, () -> {
+			scanner.next();
+		});
+	}
+
 }
 

@@ -421,6 +421,9 @@ public class Scanner implements IScanner {
                     else if (ch == '\n'){
                         error("\\ followed by illegal character" );
                     }
+                    else if (ch == 0) {
+                        error("string not terminated");
+                    }
                     else {
                         pos++;
                         column++;
