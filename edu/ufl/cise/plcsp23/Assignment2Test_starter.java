@@ -134,7 +134,7 @@ class Assignment2Test_starter {
 		assertEquals(name,ident.getName());
 		return ident;		
 	}
-		
+	// passing
 	@Test
 	void emptyProgram() throws PLCException {
 		String input = "";  //no empty expressions, this program should throw a SyntaxException
@@ -142,26 +142,26 @@ class Assignment2Test_starter {
 			getAST(input);
 		});
 	}
-	
+	// passing
 	@Test
 	void numLit() throws PLCException {
 		String input= "3";
 		checkNumLit(getAST(input),3);
 	}
-	
+	// passing
 	@Test
 	void stringLit() throws PLCException {
 		String input= "\"Go Gators\" ";
 		checkStringLit(getAST(input), "Go Gators");
 	}
-	
+	// passing
 	@Test 
 	void Z() throws PLCException {
 		String input = " Z  ";
 		AST e = getAST(input);
 		assertThat("",e, instanceOf( ZExpr.class));
 	}
-	
+	// passing
 	@Test
 	void rand() throws PLCException {
 		String input = "  rand";
@@ -170,7 +170,7 @@ class Assignment2Test_starter {
 		assertEquals(3, e.getColumn());
 		assertThat("",e, instanceOf( RandomExpr.class));
 	}
-	
+	// passing
 	@Test
 	void primary() throws PLCException {
 		String input = " (3) ";
@@ -200,18 +200,19 @@ void unary2()
 		UnaryExpr ue3 = checkUnary(ue2.getE(), Kind.MINUS);	
 		checkStringLit(ue3.getE(), "hello");
 	}
-
+// passing
 @Test void ident() throws PLCException {
 	String input = "b";
 	checkIdent(getAST(input),"b");
 }
-
+// passing
 @Test void binary0() throws PLCException {
 	String input = "b+2";
 	BinaryExpr binary = checkBinary(getAST(input),Kind.PLUS);
 	checkIdent(binary.getLeft(),"b");
 	checkNumLit(binary.getRight(),2);
 }
+//passing
 @Test void binary1() throws PLCException {
 	String input = "1-2+3*4/5%6";  //   (1-2) +  (((3  * 4)  /  5) % 6)
 
@@ -264,14 +265,14 @@ void unary2()
 	checkNumLit(falseCase.getFalseCase(),11);
 }
 
-
+// passes
 @Test void error0() throws PLCException {
 	String input = "b + + 2";
 	assertThrows(SyntaxException.class, () -> {
 		getAST(input);
 	});
 }
-
+// passes
 @Test void error1() throws PLCException {
 	String input = "3 @ 4"; //this should throw a LexicalException
 	assertThrows(LexicalException.class, () -> {
