@@ -27,7 +27,7 @@ public class Parser implements IParser {
         Expr left = null;
         Expr right = null;
         if (firstToken.getKind() == IToken.Kind.RES_if) { // first token is if --> conditional
-            cond_expr();
+           cond_expr(); // maybe
         }
         else {  // otherwise --> or
             left = or_expr();
@@ -134,8 +134,10 @@ public class Parser implements IParser {
         Expr right = null;
         if (currToken.getKind() == IToken.Kind.BANG || currToken.getKind() == IToken.Kind.MINUS || currToken.getKind() == IToken.Kind.RES_sin
                 || currToken.getKind() == IToken.Kind.RES_cos || currToken.getKind() == IToken.Kind.RES_atan) {
+            IToken op = currToken;
             currToken = scanner.next();
-            un_expr();
+            right = prim_expr();
+            left = new UnaryExpr(firstToken, op.getKind(), right);
         }
         else {
             left = prim_expr();
