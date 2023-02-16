@@ -136,7 +136,7 @@ public class Parser implements IParser {
                 || currToken.getKind() == IToken.Kind.RES_cos || currToken.getKind() == IToken.Kind.RES_atan) {
             IToken op = currToken;
             currToken = scanner.next();
-            right = prim_expr();
+            right = un_expr();
             left = new UnaryExpr(firstToken, op.getKind(), right);
         }
         else {
