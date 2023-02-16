@@ -269,8 +269,31 @@ void unary2()
 	});
 }
 
+// tests by Jaden
+
+	// passing
+	@Test
+	void ParenthesesPower() throws PLCException {
+		String input = " 7 ** ( 11 ** 2 ** 3 ** 5 ) "; // 7 ** (11 ** (2 ** (3 ** 5))
+		BinaryExpr be0 = checkBinary(getAST(input), Kind.EXP);
+
+		BinaryExpr bel1 = checkBinary(be0.getRight(), Kind.EXP); // 11 ** (2 ** (3 ** 5)
+		checkNumLit(be0.getLeft(), 7);
+
+		checkNumLit(bel1.getLeft(), 11);
+		BinaryExpr ber1 = checkBinary(bel1.getRight(), Kind.EXP); // 2 ** (3 ** 5)
+
+		checkNumLit(ber1.getLeft(), 2);
+		BinaryExpr berr2 = checkBinary(ber1.getRight(), Kind.EXP); // 3 ** 5
+
+		checkNumLit(berr2.getLeft(), 3);
+		checkNumLit(berr2.getRight(), 5);
+	}
+
+
 // extra tests from Brian
 
+	// passing
 	@Test
 	void andPowerExpressions() throws PLCException {
 		String input = " 2 ** 3 ** 5 "; // 2 ** (3 ** 5)
@@ -281,19 +304,24 @@ void unary2()
 		checkNumLit(be1.getRight(), 5);
 	}
 
+	// is returning just " 7 ** 11 " for some reason?
 	@Test
 	void andParentheses() throws PLCException {
 		String input = " ( 7 ** 11 ) ** 2 ** 3 ** 5 "; // ( 7 ** 11 ) ** (2 ** (3 ** 5))
 		BinaryExpr be0 = checkBinary(getAST(input), Kind.EXP);
-		BinaryExpr bel1 = checkBinary(be0.getLeft(), Kind.EXP);
+
+		BinaryExpr bel1 = checkBinary(be0.getLeft(), Kind.EXP); // 7 ** 11
 		checkNumLit(bel1.getLeft(), 7);
 		checkNumLit(bel1.getRight(), 11);
-		BinaryExpr ber1 = checkBinary(be0.getRight(), Kind.EXP);
+
+		BinaryExpr ber1 = checkBinary(be0.getRight(), Kind.EXP); // 2 ** (3 ** 5)
 		checkNumLit(ber1.getLeft(), 2);
-		BinaryExpr berr2 = checkBinary(ber1.getRight(), Kind.EXP);
+
+		BinaryExpr berr2 = checkBinary(ber1.getRight(), Kind.EXP); // 3 ** 5
 		checkNumLit(berr2.getLeft(), 3);
 		checkNumLit(berr2.getRight(), 5);
 	}
+
 
 	@Test
 	void andMismatchedParentheses() throws PLCException {
@@ -303,6 +331,7 @@ void unary2()
 		});
 	}
 
+	// passing
 	@Test
 	void andDeepParentheses() throws PLCException {
 		String input = " ((((((((1)))))))) ";
@@ -310,6 +339,7 @@ void unary2()
 		checkNumLit(e, 1);
 	}
 
+	// passing
 	@Test
 	void andUnaryChain() throws PLCException {
 		String input = " !-atan!--!!cos sin love";

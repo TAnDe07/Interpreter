@@ -9,9 +9,9 @@ public class Parser implements IParser {
     IToken currToken;
 
     public Parser (Scanner scanner) throws LexicalException {
-        firstToken = scanner.next();
-        currToken = firstToken;
         this.scanner = scanner;
+        firstToken = this.scanner.next();
+        currToken = firstToken;
     }
 
     @Override
@@ -27,7 +27,7 @@ public class Parser implements IParser {
         Expr left = null;
         Expr right = null;
         if (firstToken.getKind() == IToken.Kind.RES_if) { // first token is if --> conditional
-           cond_expr(); // maybe
+           left = cond_expr(); // maybe
         }
         else {  // otherwise --> or
             left = or_expr();
@@ -84,16 +84,15 @@ public class Parser implements IParser {
         return left;
     }
     // power ::= add ((**) add)*
-    // power ::= add (** power | empty)
     public Expr pow_expr() throws SyntaxException, LexicalException {
         IToken firstToken = currToken;
         Expr left = null;
         Expr right = null;
         left = add_expr();
-        while (currToken.getKind() == IToken.Kind.EXP) {
+        if (currToken.getKind() == IToken.Kind.EXP) {
             IToken op = currToken;
             currToken = scanner.next();
-            right = add_expr();
+            right = pow_expr();
             left = new BinaryExpr(firstToken, left, op.getKind(), right);
         }
         return left;
@@ -185,10 +184,10 @@ public class Parser implements IParser {
 
     public void match(IToken.Kind c) throws SyntaxException, LexicalException {
         if (currToken.getKind() == c) {
-            scanner.next();
+            currToken = scanner.next();
         }
         else {
-            error("");
+            error("no right parenthesis found");
         }
     }
 }
