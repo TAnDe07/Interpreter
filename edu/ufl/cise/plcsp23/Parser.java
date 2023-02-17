@@ -24,6 +24,7 @@ public class Parser implements IParser {
     }
     // expression ::= conditional | or
     public Expr expr() throws SyntaxException, LexicalException {
+        IToken firstToken = currToken;
         Expr left = null;
         Expr right = null;
         if (firstToken.getKind() == IToken.Kind.RES_if) { // first token is if --> conditional
@@ -36,9 +37,27 @@ public class Parser implements IParser {
         return left;
     }
     // conditional ::= if expr ? expr ? expr
-    public ConditionalExpr cond_expr() throws SyntaxException {
-        ConditionalExpr e = null;
-        return e;
+    public Expr cond_expr() throws SyntaxException, LexicalException {
+        IToken firstToken = currToken;
+        Expr left = null;
+        Expr right = null;
+        Expr T = null;
+        Expr F = null;
+        while (currToken.getKind() == IToken.Kind.RES_if || currToken.getKind() ==  IToken.Kind.QUESTION) {
+            IToken op = currToken;
+            currToken = scanner.next();
+            right = expr();
+            op = currToken;
+            currToken = scanner.next();
+            T = expr();
+            op = currToken;
+            currToken = scanner.next();
+            F = expr();
+            left = new ConditionalExpr(firstToken, right, T, F);
+            return left;
+        }
+        return left;
+
     }
     // or ::= and ((| | ||) and)*
     public Expr or_expr() throws SyntaxException, LexicalException {
