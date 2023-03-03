@@ -1,6 +1,12 @@
 package edu.ufl.cise.plcsp23;
 
 import edu.ufl.cise.plcsp23.ast.*;
+import edu.ufl.cise.plcsp23.ast.Dimension;
+
+import javax.naming.Name;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Parser implements IParser {
 
@@ -20,80 +26,111 @@ public class Parser implements IParser {
             error("empty program");
         }
 
-        return expr();
+        return program();
     }
 
     ///// recently added
 
-    //Program (incomplete)
+    //Program = Type IDENT ( ParamList ) Block --> parentheses included
     public Program program() throws SyntaxException, LexicalException {
-        IToken firstToken = currToken;
-        Program left = null;
-        return null;
+        Program program = null;
+        IToken firstToken = currToken; // type
+
+        Type type = type();
+        currToken = scanner.next(); // ident
+
+        Ident ident = new Ident(currToken);
+        currToken = scanner.next(); // left parenthesis
+        currToken = scanner.next(); // ParamList or )
+
+        List<NameDef> paramList = new ArrayList<>();
+
+        while (currToken.getKind() != Token.Kind.RPAREN) {
+            if (currToken.getKind() == Token.Kind.COMMA) {
+                currToken = scanner.next(); // next name def
+            }
+            paramList.add(param_list());
+        }
+        currToken = scanner.next(); // block
+
+        Block block = block();
+
+        return new Program(firstToken, type, ident, paramList, block);
     }
 
-    //Block (incomplete)
+    //Block = { DecList  StatementList } --> brackets included
     public Block block() throws SyntaxException, LexicalException {
-        IToken firstToken = currToken;
-        Block left = null;
-        return null;
+        IToken firstToken = currToken; // {
+        currToken = scanner.next(); // dec list
+
+        List<Declaration> decList = new ArrayList<>();
+
+        while (true) {
+            Declaration dec = dec_list();
+            if (dec == null) { // there was no declaration
+                break;
+            }
+            decList.add(dec);
+            if (currToken.getKind() == Token.Kind.DOT) {
+                currToken = scanner.next(); // declaration or statement list
+            }
+        }
+
+        List<Statement> statList = new ArrayList<>();
+
+        while (true) {
+            Statement stat = statement_list();
+            if (stat == null) { // there was no statement
+                break;
+            }
+            statList.add(stat);
+            if (currToken.getKind() == Token.Kind.DOT) {
+                currToken = scanner.next(); // statement or }
+            }
+        }
+
+        return new Block(firstToken, decList, statList);
     }
 
-    //DecList (incomplete)
+    //DecList = ( Declaration . )* --> parentheses not included
     public Declaration dec_list() throws SyntaxException, LexicalException {
-        IToken firstToken = currToken;
-        Declaration left = null;
-        return null;
+        return declaration();
     }
 
-    //StatementList (incomplete)
+    //StatementList = ( Statement . ) * --> parentheses not included
     public Statement statement_list() throws SyntaxException, LexicalException {
-        IToken firstToken = currToken;
-        Statement left = null;
-        return null;
+        return statement();
     }
 
-    //ParamList (incomplete)
+    //ParamList = ε |  NameDef  ( , NameDef ) * --> parentheses not included
     public NameDef param_list() throws SyntaxException, LexicalException {
-        IToken firstToken = currToken;
-        NameDef left = null;
-        return null;
+        return nameDef();
     }
 
-    //Name Def (incomplete)
+    //Name Def = Type ( ε | Dimension ) IDENT --> parentheses not included
     public NameDef nameDef() throws SyntaxException, LexicalException {
-        IToken firstToken = currToken;
-        Type left = null;
-        Dimension right = null;
-        Ident i = null;
-        left = type();
-        NameDef result = null;
+        IToken firstToken = currToken; // type
+        Type left = type();
+        currToken = scanner.next(); // ident or dimension
 
-        if (currToken.getKind() == IToken.Kind.LSQUARE) {
+        Dimension right = null;
+
+        if (currToken.getKind() == IToken.Kind.LSQUARE) { // dimension
             right = dimension();
-            i = new Ident(currToken);
-            result = new NameDef(firstToken, left, right, i) {
-                @Override
-                public Object visit(ASTVisitor v, Object arg) throws PLCException {
-                    return null;
-                }
-            };
+            if (currToken.getKind() == Token.Kind.RSQUARE) {
+                currToken = scanner.next(); // ident
+            }
         }
-        else {
-            i = new Ident(currToken);
-            result = new NameDef(firstToken, left, right, i) {
-                @Override
-                public Object visit(ASTVisitor v, Object arg) throws PLCException {
-                    return null;
-                }
-            };
-        }
-        return result;
+        // just ident
+        Ident i = new Ident(currToken);
+        currToken = scanner.next(); // , or ) or
+
+        return new NameDef(firstToken, left, right, i);
     }
 
-    //Type(incomplete)
+    //Type = image | pixel | int | string | void
     public Type type() throws SyntaxException, LexicalException {
-        Type p  = null;
+        /*Type p  = null;
         if (currToken.getKind() == IToken.Kind.RES_image) {
             //p = ?
             currToken = scanner.next();
@@ -116,8 +153,29 @@ public class Parser implements IParser {
         }
         else {
             error("invalid Type");
+        }*/
+        return Type.getType(currToken);
+    }
+
+    // Declaration = NameDef ( ε | = Expr) --> parentheses not included
+    public Declaration declaration() throws SyntaxException, LexicalException {
+        IToken firstToken = currToken;
+        Expr expr = null;
+        NameDef nameDef = null;
+
+        if (currToken.getKind() == Token.Kind.RES_image || currToken.getKind() == Token.Kind.RES_pixel ||
+                currToken.getKind() == Token.Kind.RES_int || currToken.getKind() == Token.Kind.RES_string ||
+                currToken.getKind() == Token.Kind.RES_void) { // if there is a declaration
+            nameDef = nameDef();
+            currToken = scanner.next(); // . or =
+            if (currToken.getKind() == Token.Kind.ASSIGN) { // =
+                currToken = scanner.next(); // expr
+                expr = expr();
+            }
+            return new Declaration(firstToken, nameDef, expr);
         }
-        return p;
+
+        return null; // no declaration
     }
 
  /////
@@ -257,7 +315,7 @@ public class Parser implements IParser {
             left = new UnaryExpr(firstToken, op.getKind(), right);
         }
         else {
-            left = prim_expr();
+            left = unary_postfix();
         }
         return left;
     }
@@ -292,22 +350,30 @@ public class Parser implements IParser {
         }
         //new
         else if (currToken.getKind() == IToken.Kind.RES_x) {
-            e = new RandomExpr(currToken);
+            e = new PredeclaredVarExpr(currToken);
             currToken = scanner.next();
         }
         else if (currToken.getKind() == IToken.Kind.RES_y) {
-            e = new RandomExpr(currToken);
+            e = new PredeclaredVarExpr(currToken);
             currToken = scanner.next();
         }
         else if (currToken.getKind() == IToken.Kind.RES_a) {
-            e = new RandomExpr(currToken);
+            e = new PredeclaredVarExpr(currToken);
             currToken = scanner.next();
         }
         else if (currToken.getKind() == IToken.Kind.RES_r) {
-            e = new RandomExpr(currToken);
+            e = new PredeclaredVarExpr(currToken);
             currToken = scanner.next();
         }
-        // add expandedPixel and pixelFunction..
+        else if (currToken.getKind() == IToken.Kind.LSQUARE) {
+            e = expanded_pixel();
+            currToken = scanner.next();
+        }
+        else if (currToken.getKind() == IToken.Kind.RES_x_cart || currToken.getKind() == IToken.Kind.RES_y_cart ||
+            currToken.getKind() == IToken.Kind.RES_a_polar || currToken.getKind() == IToken.Kind.RES_r_polar) {
+            e = pixel_function_expr();
+            currToken = scanner.next();
+        }
         else {
             error("didn't end with primary");
         }
@@ -316,114 +382,151 @@ public class Parser implements IParser {
 
     //// recently added
 
-    //Channel Selector (incomplete)
+    // UnaryExprPostfix = PrimaryExpr (PixelSelector | ε ) (ChannelSelector | ε )
+    public Expr unary_postfix() throws SyntaxException, LexicalException {
+        IToken firstToken = currToken;
+        Expr left = prim_expr();
+        PixelSelector pix = null;
+        ColorChannel color = null;
+
+        if (currToken.getKind() == IToken.Kind.LSQUARE) { // there is a pixel selector
+            pix = pixel_selector();
+            if (currToken.getKind() == IToken.Kind.RSQUARE) {
+                currToken = scanner.next(); // empty or channel selector (:)
+            }
+        }
+
+        if (currToken.getKind() == IToken.Kind.COLON) { // there is a channel selector
+            currToken = scanner.next();
+            color = channel_selector();
+        }
+
+        if (pix != null || color != null) {
+            return new UnaryExprPostfix(firstToken, left, pix, color);
+        }
+
+        return left;
+    }
+
+    //Channel Selector = : red | : grn | : blu
     public ColorChannel channel_selector() throws SyntaxException, LexicalException {
-        ColorChannel e = null;
-        e = ColorChannel.getColor(currToken);
-        currToken = scanner.next();
-
-        return e;
+        return ColorChannel.getColor(currToken);
     }
 
-    //Pixel Selector (incomplete)
+    //Pixel Selector = [ Expr , Expr ] --> (same as Dimension)
     public PixelSelector pixel_selector() throws SyntaxException, LexicalException {
-        IToken firstToken = currToken;
-        PixelSelector left = null;
-        Expr right = null;
-        Expr T = null;
-        while (currToken.getKind() == IToken.Kind.LSQUARE || currToken.getKind() ==  IToken.Kind.COMMA) {
-            IToken op = currToken;
-            currToken = scanner.next();
-            right = expr();
-            op = currToken;
-            currToken = scanner.next();
-            T = expr();
-            left = new PixelSelector(firstToken, right, T);
-            return left;
+        IToken firstToken = currToken; // [
+        currToken = scanner.next(); // expr
+
+        Expr left = expr();
+        if (currToken.getKind() == Token.Kind.COMMA) {
+            currToken = scanner.next(); // expr
         }
-        return left;
+
+        Expr right = expr();
+
+        return new PixelSelector(firstToken, left, right);
     }
 
-    //Expanded Pixel (incomplete)
+    //Expanded Pixel = [ Expr , Expr , Expr ]
     public ExpandedPixelExpr expanded_pixel() throws SyntaxException, LexicalException {
-        IToken firstToken = currToken;
-        ExpandedPixelExpr left = null;
-        Expr right = null;
-        Expr T = null;
-        Expr F = null;
-        while (currToken.getKind() == IToken.Kind.LSQUARE || currToken.getKind() ==  IToken.Kind.COMMA) {
-            IToken op = currToken;
-            currToken = scanner.next();
-            right = expr();
-            op = currToken;
-            currToken = scanner.next();
-            T = expr();
-            op = currToken;
-            currToken = scanner.next();
-            F = expr();
-            left = new ExpandedPixelExpr(firstToken, right, T, F);
-            return left;
+        IToken firstToken = currToken; // [
+        currToken = scanner.next(); // expr
+
+        Expr left = expr();
+        if (currToken.getKind() == Token.Kind.COMMA) {
+            currToken = scanner.next(); // expr
         }
-        return left;
+
+        Expr mid = expr();
+        if (currToken.getKind() == Token.Kind.COMMA) {
+            currToken = scanner.next(); // expr
+        }
+
+        Expr right = expr();
+
+        return new ExpandedPixelExpr(firstToken, left, mid, right);
     }
 
-    //Pixel Function Expr (incomplete)
+    //Pixel Function Expr = ( x_cart | y_cart | a_polar | r_polar ) PixelSelector --> parentheses not included
     public PixelFuncExpr pixel_function_expr() throws SyntaxException, LexicalException {
-        IToken firstToken = currToken;
-        PixelFuncExpr left = null;
-        PixelSelector right = null;
-        if (currToken.getKind() == IToken.Kind.RES_x_cart || currToken.getKind() == IToken.Kind.RES_y_cart || currToken.getKind() == IToken.Kind.RES_a_polar
-                || currToken.getKind() == IToken.Kind.RES_r_polar) {
-            IToken op = currToken;
-            currToken = scanner.next();
-            right = pixel_selector();
-            left = new PixelFuncExpr(firstToken, op.getKind(), right);
-        }
-        return left;
+        IToken firstToken = currToken; // x, y, a, r
+        IToken.Kind function = currToken.getKind();
+        currToken = scanner.next(); // pixel selector
+
+        PixelSelector pix = pixel_selector();
+
+        return new PixelFuncExpr(firstToken, function, pix);
     }
 
-    //Dimension (incomplete)
+    //Dimension = [ Expr , Expr ]
     public Dimension dimension() throws SyntaxException, LexicalException {
-        IToken firstToken = currToken;
-        Dimension left = null;
-        Expr right = null;
-        Expr T = null;
-        while (currToken.getKind() == IToken.Kind.LSQUARE || currToken.getKind() ==  IToken.Kind.COMMA) {
-            IToken op = currToken;
-            currToken = scanner.next();
-            right = expr();
-            op = currToken;
-            currToken = scanner.next();
-            T = expr();
-            left = new Dimension(firstToken, right, T);
-            return left;
+        IToken firstToken = currToken; // [
+        currToken = scanner.next(); // expr
+
+        Expr left = expr();
+        if (currToken.getKind() == Token.Kind.COMMA) {
+            currToken = scanner.next(); // expr
         }
-        return left;
+
+        Expr right = expr();
+
+        return new Dimension(firstToken, left, right);
     }
 
-    //LValue (incomplete)
+    //LValue = IDENT (PixelSelector | ε ) (ChannelSelector | ε ) --> parentheses not included
     public LValue lValue() throws SyntaxException, LexicalException {
-        IToken firstToken = currToken;
-        LValue left = null;
-        PixelSelector right = null;
-        ColorChannel T = null;
-        while (currToken.getKind() == IToken.Kind.IDENT) {
-            Ident i = new Ident(currToken);//may be wrong
-            IToken op = currToken;
-            currToken = scanner.next();
-            right = pixel_selector();
-            op = currToken;
-            currToken = scanner.next();
-            T = channel_selector();
-            left = new LValue(firstToken,i, right, T);
-            return left;
+        IToken firstToken = currToken; // ident
+        Ident i = new Ident(currToken);
+        PixelSelector pix = null;
+        ColorChannel color = null;
+
+        currToken = scanner.next(); // empty or pixel selector ([) or channel selector (:)
+
+        if (currToken.getKind() == IToken.Kind.LSQUARE) { // there is a pixel selector
+            pix = pixel_selector();
+            if (currToken.getKind() == IToken.Kind.RSQUARE) {
+                currToken = scanner.next(); // empty or channel selector (:)
+            }
         }
-        return left;
+
+        if (currToken.getKind() == IToken.Kind.COLON) { // there is a channel selector
+            currToken = scanner.next();
+            color = channel_selector();
+        }
+
+        return new LValue(firstToken, i, pix, color);
     }
 
-    //Statement (incomplete)
+    //Statement = LValue = Expr | write Expr | while Expr Block
     public Statement statement() throws SyntaxException, LexicalException {
-       return null;
+        IToken firstToken = currToken; // LValue or write or while
+        Expr expr = null;
+        NameDef nameDef = null;
+        LValue lValue = null;
+
+        switch (currToken.getKind()) {
+            case IDENT -> {
+                lValue = lValue();
+                currToken = scanner.next(); // expr
+                expr = expr();
+                return new AssignmentStatement(firstToken, lValue, expr);
+            }
+            case RES_write -> {
+                currToken = scanner.next(); // expr
+                expr = expr();
+                return new WriteStatement(firstToken, expr);
+            }
+            case RES_while -> {
+                currToken = scanner.next(); // expr
+                expr = expr();
+                Block block = block();
+                return new WhileStatement(firstToken, expr, block);
+            }
+            default -> { // no statement
+                return null;
+            }
+        }
     }
 
     //////

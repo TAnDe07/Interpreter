@@ -75,6 +75,9 @@ public class Scanner implements IScanner {
         reserved.put("atan", Token.Kind.RES_atan);
         reserved.put("if", Token.Kind.RES_if);
         reserved.put("while", Token.Kind.RES_while);
+        reserved.put("red", Token.Kind.RES_red);
+        reserved.put("grn", Token.Kind.RES_grn);
+        reserved.put("blu", Token.Kind.RES_blu);
     }
 
     private IToken scanToken() throws LexicalException {
