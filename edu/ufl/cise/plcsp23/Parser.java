@@ -1,10 +1,7 @@
 package edu.ufl.cise.plcsp23;
 
 import edu.ufl.cise.plcsp23.ast.*;
-import edu.ufl.cise.plcsp23.ast.Dimension;
 
-import javax.naming.Name;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,6 +68,7 @@ public class Parser implements IParser {
                 break;
             }
             decList.add(dec);
+            currToken = scanner.next();
             if (currToken.getKind() == Token.Kind.DOT) {
                 currToken = scanner.next(); // declaration or statement list
             }
@@ -167,7 +165,7 @@ public class Parser implements IParser {
                 currToken.getKind() == Token.Kind.RES_int || currToken.getKind() == Token.Kind.RES_string ||
                 currToken.getKind() == Token.Kind.RES_void) { // if there is a declaration
             nameDef = nameDef();
-            currToken = scanner.next(); // . or =
+           // currToken = scanner.next(); // . or =
             if (currToken.getKind() == Token.Kind.ASSIGN) { // =
                 currToken = scanner.next(); // expr
                 expr = expr();
