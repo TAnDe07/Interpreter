@@ -128,10 +128,10 @@ public class Parser implements IParser {
 
     //Type = image | pixel | int | string | void
     public Type type() throws SyntaxException, LexicalException {
-        /*Type p  = null;
+        /*
         if (currToken.getKind() == IToken.Kind.RES_image) {
-            //p = ?
-            currToken = scanner.next();
+            // p = ?
+            return Type.getType(currToken);
         }
         else if (currToken.getKind() == IToken.Kind.RES_pixel){
             //p = ?
@@ -151,8 +151,16 @@ public class Parser implements IParser {
         }
         else {
             error("invalid Type");
-        }*/
-        return Type.getType(currToken);
+        }
+        */
+        return switch(currToken.getKind()) {
+            case RES_image -> Type.getType(currToken);
+            case RES_pixel -> Type.getType(currToken);
+            case RES_int -> Type.getType(currToken);
+            case RES_string -> Type.getType(currToken);
+            case RES_void -> Type.getType(currToken);
+            default -> throw new SyntaxException("error in Type.getType, unexpected token kind ");
+        };
     }
 
     // Declaration = NameDef ( ε | = Expr) --> parentheses not included
