@@ -36,6 +36,10 @@ public class Parser implements IParser {
         Type type = type();
         currToken = scanner.next(); // ident
 
+        if (currToken.getKind() != IToken.Kind.IDENT) {
+            error("used reserved word as ident");
+        }
+
         Ident ident = new Ident(currToken);
         currToken = scanner.next(); // left parenthesis
         currToken = scanner.next(); // ParamList or )
@@ -51,6 +55,16 @@ public class Parser implements IParser {
         currToken = scanner.next(); // block
 
         Block block = block();
+
+        if (currToken.getKind() != IToken.Kind.RCURLY) {
+            error("brackets not closed");
+        }
+
+        currToken = scanner.next();
+
+        if (currToken.getKind() != IToken.Kind.EOF) {
+            error("something after program");
+        }
 
         return new Program(firstToken, type, ident, paramList, block);
     }
@@ -82,6 +96,7 @@ public class Parser implements IParser {
                 break;
             }
             statList.add(stat);
+            currToken = scanner.next(); // .
             if (currToken.getKind() == Token.Kind.DOT) {
                 currToken = scanner.next(); // statement or }
             }
@@ -128,31 +143,6 @@ public class Parser implements IParser {
 
     //Type = image | pixel | int | string | void
     public Type type() throws SyntaxException, LexicalException {
-        /*
-        if (currToken.getKind() == IToken.Kind.RES_image) {
-            // p = ?
-            return Type.getType(currToken);
-        }
-        else if (currToken.getKind() == IToken.Kind.RES_pixel){
-            //p = ?
-            currToken = scanner.next();
-        }
-        else if (currToken.getKind() == IToken.Kind.RES_int) {
-            //p = ?
-            currToken = scanner.next();
-        }
-        else if (currToken.getKind() == IToken.Kind.RES_string) {
-            //p = ?
-            currToken = scanner.next();
-        }
-        else if (currToken.getKind() == IToken.Kind.RES_void) {
-            //p = ?
-            currToken = scanner.next();
-        }
-        else {
-            error("invalid Type");
-        }
-        */
         return switch(currToken.getKind()) {
             case RES_image -> Type.getType(currToken);
             case RES_pixel -> Type.getType(currToken);
