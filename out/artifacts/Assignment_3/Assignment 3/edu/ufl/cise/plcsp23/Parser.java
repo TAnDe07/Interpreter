@@ -46,10 +46,6 @@ public class Parser implements IParser {
 
         List<NameDef> paramList = new ArrayList<>();
 
-        if (currToken.getKind() == IToken.Kind.COMMA) {
-            error("comma before any parameters");
-        }
-
         while (currToken.getKind() != Token.Kind.RPAREN) {
             if (currToken.getKind() == Token.Kind.COMMA) {
                 currToken = scanner.next(); // next name def
@@ -85,12 +81,10 @@ public class Parser implements IParser {
             if (dec == null) { // there was no declaration
                 break;
             }
-            decList.add(dec); // currToken = .
+            decList.add(dec);
+            currToken = scanner.next();
             if (currToken.getKind() == Token.Kind.DOT) {
                 currToken = scanner.next(); // declaration or statement list
-                if (currToken.getKind() == IToken.Kind.DOT) {
-                    error("dot cannot start any grammar");
-                }
             }
         }
 
@@ -101,12 +95,10 @@ public class Parser implements IParser {
             if (stat == null) { // there was no statement
                 break;
             }
-            statList.add(stat);  // currToken = .
+            statList.add(stat);
+            currToken = scanner.next(); // .
             if (currToken.getKind() == Token.Kind.DOT) {
                 currToken = scanner.next(); // statement or }
-                if (currToken.getKind() == IToken.Kind.DOT) {
-                    error("dot cannot start any grammar");
-                }
             }
         }
 
@@ -403,7 +395,6 @@ public class Parser implements IParser {
         if (currToken.getKind() == IToken.Kind.COLON) { // there is a channel selector
             currToken = scanner.next();
             color = channel_selector();
-            currToken = scanner.next(); // .
         }
 
         if (pix != null || color != null) {
@@ -525,8 +516,7 @@ public class Parser implements IParser {
             case RES_while -> {
                 currToken = scanner.next(); // expr
                 expr = expr();
-                Block block = block(); // currToken = }
-                currToken = scanner.next(); // .
+                Block block = block();
                 return new WhileStatement(firstToken, expr, block);
             }
             default -> { // no statement
