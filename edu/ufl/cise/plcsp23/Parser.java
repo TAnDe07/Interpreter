@@ -107,9 +107,16 @@ public class Parser implements IParser {
                 if (currToken.getKind() == IToken.Kind.DOT) {
                     error("dot cannot start any grammar");
                 }
+                if (currToken.getKind() == Token.Kind.RES_image || currToken.getKind() == Token.Kind.RES_pixel ||
+                        currToken.getKind() == Token.Kind.RES_int || currToken.getKind() == Token.Kind.RES_string ||
+                        currToken.getKind() == Token.Kind.RES_void) {
+                    error("declaration after statements begin");
+                }
             }
         }
-
+        if (currToken.getKind() != IToken.Kind.RCURLY) {
+            error("end of block not reached");
+        }
         return new Block(firstToken, decList, statList);
     }
 
@@ -143,6 +150,9 @@ public class Parser implements IParser {
             }
         }
         // just ident
+        if (currToken.getKind() != IToken.Kind.IDENT) {
+            error("reserved word used as ident");
+        }
         Ident i = new Ident(currToken);
         currToken = scanner.next(); // , or ) or
 
