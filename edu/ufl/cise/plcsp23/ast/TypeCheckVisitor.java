@@ -1,9 +1,11 @@
 package edu.ufl.cise.plcsp23.ast;
 
-import edu.ufl.cise.plcsp23.*;
+import edu.ufl.cise.plcsp23.IToken;
+import edu.ufl.cise.plcsp23.PLCException;
+import edu.ufl.cise.plcsp23.Token;
+import edu.ufl.cise.plcsp23.TypeCheckException;
 
 import java.util.HashMap;
-import java.util.List;
 
 public class TypeCheckVisitor implements ASTVisitor {
 
@@ -243,12 +245,29 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitDimension(Dimension dimension, Object arg) throws PLCException {
-        return null;
+        Type expr1 = dimension.getHeight().type;
+        Type expr2 = dimension.getHeight().type;
+
+        if (expr1 != Type.INT && expr2 != Type.INT) {
+           error("Dimension not properly typed");
+        }
+        return Type.INT; //?????
     }
 
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCException {
-        return null;
+        Type expr1 = expandedPixelExpr.getBluExpr().type;
+        Type expr2 = expandedPixelExpr.getGrnExpr().type;
+        Type expr3 = expandedPixelExpr.getRedExpr().type;
+        Type result = null;
+
+        if (expr1 == Type.INT && expr2 == Type.INT && expr3 == Type.INT) {
+            result = Type.PIXEL;
+        }
+        else {
+            error("Wrong type for expandedPixelExpr");
+        }
+        return result;
     }
 
     @Override
@@ -320,7 +339,13 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCException {
-       return null;
+        Type expr1 = pixelSelector.getX().type;
+        Type expr2 = pixelSelector.getY().type;
+
+        if (expr1 != Type.INT && expr2 != Type.INT) {
+            error("Dimension not properly typed");
+        }
+        return Type.INT; //?????
     }
 
     @Override
