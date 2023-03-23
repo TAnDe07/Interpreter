@@ -283,10 +283,15 @@ public class TypeCheckVisitor implements ASTVisitor {
         Type rightType = (Type) unaryExpr.getE().visit(this, arg);
         Type resultType = null;
         if (op == IToken.Kind.BANG) {
-            if (rightType != Type.INT || rightType != Type.PIXEL) {
+            if (rightType == Type.INT) {
+                resultType = Type.INT;
+            }
+            else if (rightType != Type.PIXEL) {
+                resultType = Type.PIXEL;
+            }
+            else {
                 error("incompatible types for unary");
             }
-            resultType = unaryExpr.type;
         }
         else if (op == IToken.Kind.MINUS ||
                 op == IToken.Kind.RES_sin ||
@@ -295,14 +300,26 @@ public class TypeCheckVisitor implements ASTVisitor {
             if (rightType != Type.INT) {
                 error("incompatible types for unary");
             }
-            resultType = unaryExpr.type;
+            resultType = Type.INT;;
         }
         return resultType;
     }
 
     @Override
     public Object visitUnaryExprPostFix(UnaryExprPostfix unaryExprPostfix, Object arg) throws PLCException {
-        return null;
+        Type prim = unaryExprPostfix.getPrimary().type;
+        Type pixSel = (Type) unaryExprPostfix.getPixel().visit(this, arg);
+        Type chanSel = null; //????
+
+        if (prim == Type.PIXEL) {
+            if (pixSel != null) {
+                error("pixel selector exists");
+            }
+            else if (chanSel ==  ){
+
+            }
+        }
+       return null;
     }
 
     @Override
