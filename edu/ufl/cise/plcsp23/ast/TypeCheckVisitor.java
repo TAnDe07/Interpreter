@@ -66,6 +66,7 @@ public class TypeCheckVisitor implements ASTVisitor {
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCException {
         Token.Kind op = binaryExpr.getOp();
+        // Expr0 and Expr1 are properly typed
         Type leftType = (Type) binaryExpr.getLeft().visit(this, arg);
         Type rightType = (Type) binaryExpr.getRight().visit(this, arg);
         Type resultType = null;
@@ -172,18 +173,42 @@ public class TypeCheckVisitor implements ASTVisitor {
                 error("compiler error");
             }
         }
+        // BinaryExpr.type ← result type
         binaryExpr.setType(resultType);
         return resultType;
     }
 
     @Override
     public Object visitBlock(Block block, Object arg) throws PLCException {
-        return null;
+        // DecList is properly typed
+        for (int i = 0; i < block.getDecList().size(); i++) {
+            block.getDecList().get(i).visit(this, arg);
+        }
+        // StatementList is properly typed
+        for (int i = 0; i < block.getStatementList().size(); i++) {
+            block.getStatementList().get(i).visit(this, arg);
+        }
+        return block;
     }
 
     @Override
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws PLCException {
-        return null;
+        // Expr0, Expr1, and Expr2 are properly typed
+        conditionalExpr.getGuard().visit(this, arg);
+        conditionalExpr.getTrueCase().visit(this, arg);
+        conditionalExpr.getFalseCase().visit(this, arg);
+        // Expr0.type == int
+        if (conditionalExpr.getGuard().getType() != Type.INT) {
+            error("guard is not of type int");
+        }
+        // Expr1.type == Expr2.type
+        if (conditionalExpr.getTrueCase().getType() != conditionalExpr.getFalseCase().getType()) {
+            error("true and false cases do not have same type");
+        }
+        // ConditionalExpr.type ← Expr1.type
+        conditionalExpr.setType(conditionalExpr.getGuard().getType());
+
+        return conditionalExpr;
     }
 
     @Override
@@ -245,10 +270,14 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitDimension(Dimension dimension, Object arg) throws PLCException {
+        // Expr0 and Expr1 are properly typed
+        dimension.getWidth().visit(this, arg);
+        dimension.getHeight().visit(this, arg);
+
         Type expr1 = dimension.getHeight().type;
         Type expr2 = dimension.getHeight().type;
-
-        if (expr1 != Type.INT && expr2 != Type.INT) {
+        // Expr0.type == int && Expr1.type == int
+        if (expr1 != Type.INT || expr2 != Type.INT) {
            error("Dimension not properly typed");
         }
         return Type.INT; //?????
@@ -313,7 +342,13 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCException {
-        return null;
+        // Ident has been declared
+        String name = lValue.getIdent().getDef().toString();
+        if (symbolTable.lookup(name) == null) { // null if name not declared
+            error("ident not declared");
+        }
+        // Ident is visible in this scope
+        return lValue;
     }
 
     @Override
