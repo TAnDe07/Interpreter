@@ -32,6 +32,14 @@ public class TypeCheckVisitor implements ASTVisitor {
         return null;
     }
 
+
+    private void check(boolean condition, AST node, String message) throws TypeCheckException {
+        if (!condition) {
+            throw new TypeCheckException(message, node.getSourceLoc());
+        }
+    }
+
+
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCException {
         Token.Kind op = binaryExpr.getOp();
@@ -157,19 +165,20 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCException {
-        String name = declaration.getName();
+        String name = declaration.nameDef.toString();
         boolean inserted = symbolTable.insert(name,declaration);
         check(inserted, declaration, "variable " + name + "already declared");
         Expr initializer = declaration.getInitializer();
         if (initializer != null) {
-        //infer type of initializer
+            //infer type of initializer
             Type initializerType = (Type) initializer.visit(this,arg);
-            check(assignmentCompatible(declaration.getType(), initializerType),declaration,
+            check(assignmentCompatible(declaration.initializer.getType(), initializerType),declaration,
                     "type of expression and declared type do not match");
-            declaration.setAssigned(true);
+            // declaration.setAssigned(true); ??
         }
         return null;
     }
+
 
     @Override
     public Object visitDimension(Dimension dimension, Object arg) throws PLCException {
