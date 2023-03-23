@@ -536,18 +536,21 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitWhileStatement(WhileStatement whileStatement, Object arg) throws PLCException {
+        if (whileStatement.guard.type == Type.INT) {
+            return visitBlock(whileStatement.block, arg);
+        }
         return null;
     }
 
     @Override
     public Object visitWriteStatement(WriteStatement statementWrite, Object arg) throws PLCException {
-       /* if (?) {
-           // visitBlock(?,?);
+        //DK????
+        if (statementWrite.e.type == Type.INT ||
+                statementWrite.e.type == Type.STRING ||
+                statementWrite.e.type == Type.PIXEL ||
+                statementWrite.e.type == Type.IMAGE) {
+            return Type.STRING;
         }
-        else {
-            error("WriteStatement not typed properly");
-        }
-        */
         return null; //?????
     }
 
