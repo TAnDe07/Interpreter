@@ -450,10 +450,11 @@ public class TypeCheckVisitor implements ASTVisitor {
         Type prim = unaryExprPostfix.getPrimary().type;
         Type result = null;
 
-        if (visitPixelSelector(unaryExprPostfix.getPixel(), arg) != Type.INT && (unaryExprPostfix.getColor() == null) {
+        //DK??
+        if (visitPixelSelector(unaryExprPostfix.getPixel(), arg) != Type.INT && unaryExprPostfix.getColor() == null) {
             error("pixel selector and channel selector does not exist in UnaryExprPostFix");
         }
-        if (prim == Type.PIXEL) {
+        else if (prim == Type.PIXEL) {
             if (visitPixelSelector(unaryExprPostfix.getPixel(), arg) == Type.INT) {
                 error("primType : pixel - pixel selector exists in UnaryExprPostFix");
             }
