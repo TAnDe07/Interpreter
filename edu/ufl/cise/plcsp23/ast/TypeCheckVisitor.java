@@ -243,7 +243,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCException {
-        return null;
+       return null;
     }
 
     @Override
@@ -320,7 +320,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitZExpr(ZExpr zExpr, Object arg) throws PLCException {
-        return null;
+        zExpr.setType(Type.INT);
+        return Type.INT;
     }
 
     private void error(String message) throws TypeCheckException {
