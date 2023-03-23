@@ -353,12 +353,29 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCException {
-        if (nameDef.dimension != null) {
-            //nameDef.type = ?
+        Dimension dim = nameDef.getDimension();
+        String name = nameDef.toString();
+
+        if (dim != null) {
+            // If (Dimension != ε) Type == image
+            if (nameDef.getType() != Type.IMAGE) {
+                error("type must be image");
+            }
+            // If (Dimension != ε) Dimension is properly typed
+            dim.visit(this, arg);
         }
-        nameDef.ident.getName();
-        // symbolTable.insert(nameDef, ?);
-        return null;
+        // Ident.name has not been previously declared in this scope.
+        // need to edit to include scope
+        if (symbolTable.lookup(name) != null) { // null if name not declared
+            error("ident already declared");
+        }
+        // Type != void
+        if (nameDef.getType() == Type.VOID) {
+            error("type cannot be void");
+        }
+        // Insert (name, NameDef) into symbol table.
+
+        return nameDef;
     }
 
     @Override
@@ -369,15 +386,23 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitPixelFuncExpr(PixelFuncExpr pixelFuncExpr, Object arg) throws PLCException {
-        return null;
+        // PixelSelector is properly typed
+        pixelFuncExpr.getSelector().visit(this, arg);
+        // PixelFunctionExpr.type ← int
+        pixelFuncExpr.setType(Type.INT);
+        return pixelFuncExpr;
     }
 
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCException {
+        // Expr0,and Expr1 are properly typed
+        pixelSelector.getX().visit(this, arg);
+        pixelSelector.getY().visit(this, arg);
+
         Type expr1 = pixelSelector.getX().type;
         Type expr2 = pixelSelector.getY().type;
-
-        if (expr1 != Type.INT && expr2 != Type.INT) {
+        // Expr0.type == int && Expr1.type == int
+        if (expr1 != Type.INT || expr2 != Type.INT) {
             error("Dimension not properly typed");
         }
         return Type.INT; //?????
