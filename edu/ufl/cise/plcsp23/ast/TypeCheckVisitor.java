@@ -385,7 +385,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitPredeclaredVarExpr(PredeclaredVarExpr predeclaredVarExpr, Object arg) throws PLCException {
-        return null;
+        predeclaredVarExpr.setType(Type.INT);
+        return Type.INT;
     }
 
     @Override
@@ -403,7 +404,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitRandomExpr(RandomExpr randomExpr, Object arg) throws PLCException {
-        return null;
+        randomExpr.setType(Type.INT);
+        return Type.INT;
     }
 
     @Override
