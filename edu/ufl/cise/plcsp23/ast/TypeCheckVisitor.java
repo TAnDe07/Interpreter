@@ -435,7 +435,36 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws PLCException {
-        return null;
+        // Expr is properly typed
+        returnStatement.getE().visit(this, arg);
+        // Expr.type is assignment compatible with Program.type (where Program is root of ast)
+        // not sure if this checking is correct
+        /*switch (returnStatement.getE().getType()) {
+            case IMAGE -> {
+                if (initializerType == Type.INT || initializerType == Type.VOID) {
+                    error("invalid expr type for image nameDef");
+                }
+            }
+            case PIXEL -> {
+                if (initializerType != Type.INT && initializerType != Type.PIXEL) {
+                    error("invalid expr type for pixel nameDef");
+                }
+            }
+            case INT -> {
+                if (initializerType != Type.INT && initializerType != Type.PIXEL) {
+                    error("invalid expr type for int nameDef");
+                }
+            }
+            case STRING -> {
+                if (initializerType == Type.VOID) {
+                    error("invalid expr type for string nameDef");
+                }
+            }
+            case VOID -> {
+                error("nameDef cannot be void");
+            }
+        }*/
+        return returnStatement;
     }
 
     @Override
