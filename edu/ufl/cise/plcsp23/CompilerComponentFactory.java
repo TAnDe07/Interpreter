@@ -27,7 +27,8 @@ public class CompilerComponentFactory {
     public static ASTVisitor makeTypeChecker() {
         //code to instantiate a return an ASTVisitor for type checking
         //DK IF this is correct
-        return new ASTVisitor() {
+        return new TypeCheckVisitor();
+        /*return new ASTVisitor() {
             @Override
             public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
                 return null;
@@ -147,6 +148,6 @@ public class CompilerComponentFactory {
             public Object visitZExpr(ZExpr zExpr, Object arg) throws PLCException {
                 return null;
             }
-        };
+        };*/
     }
 }
