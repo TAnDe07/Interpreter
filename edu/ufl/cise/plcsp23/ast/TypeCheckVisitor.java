@@ -448,19 +448,33 @@ public class TypeCheckVisitor implements ASTVisitor {
     @Override
     public Object visitUnaryExprPostFix(UnaryExprPostfix unaryExprPostfix, Object arg) throws PLCException {
         Type prim = unaryExprPostfix.getPrimary().type;
-        Type pixSel = (Type) unaryExprPostfix.getPixel().visit(this, arg);
-        Type chanSel = null; //????
+        Type result = null;
 
-        if (prim == Type.PIXEL) {
-            if (pixSel != null) {
-                error("pixel selector exists");
-            }
-            /*else if (chanSel ==  ){
-
-            }
-            */
+        if (visitPixelSelector(unaryExprPostfix.getPixel(), arg) != Type.INT && (unaryExprPostfix.getColor() == null) {
+            error("pixel selector and channel selector does not exist in UnaryExprPostFix");
         }
-       return null;
+        if (prim == Type.PIXEL) {
+            if (visitPixelSelector(unaryExprPostfix.getPixel(), arg) == Type.INT) {
+                error("primType : pixel - pixel selector exists in UnaryExprPostFix");
+            }
+            else if (unaryExprPostfix.getColor() != null) {
+                result = Type.INT;
+            }
+        }
+        else if (prim == Type.IMAGE) {
+            if (visitPixelSelector(unaryExprPostfix.getPixel(), arg) == Type.INT) {
+                if (unaryExprPostfix.getColor() != null) {
+                    result = Type.INT;
+                }
+                else if (unaryExprPostfix.getColor() == null) {
+                    result = Type.PIXEL;
+                }
+            }
+            else {
+                result = Type.IMAGE;
+            }
+        }
+       return result;
     }
 
     @Override
@@ -470,10 +484,14 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitWriteStatement(WriteStatement statementWrite, Object arg) throws PLCException {
-        if (statementWrite.e == null) {
-            return null; //Dk, error maybe?
+       /* if (?) {
+           // visitBlock(?,?);
         }
-        return statementWrite.e;
+        else {
+            error("WriteStatement not typed properly");
+        }
+        */
+        return null; //?????
     }
 
     @Override
