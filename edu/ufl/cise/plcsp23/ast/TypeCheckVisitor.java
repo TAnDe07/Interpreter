@@ -193,7 +193,24 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitIdent(Ident ident, Object arg) throws PLCException {
-        return null;
+        Type name = ident.def.type;
+        Type result = null;
+        if (name == Type.IMAGE) {
+            result = Type.IMAGE;
+        }
+        else if (name == Type.PIXEL) {
+            result = Type.PIXEL;
+        }
+        else if (name == Type.STRING) {
+            result = Type.STRING;
+        }
+        else if (name == Type.INT) {
+            result = Type.INT;
+        }
+        else {
+            error("incorrect ident");
+        }
+        return result;
     }
 
     @Override
@@ -315,9 +332,10 @@ public class TypeCheckVisitor implements ASTVisitor {
             if (pixSel != null) {
                 error("pixel selector exists");
             }
-            else if (chanSel ==  ){
+            /*else if (chanSel ==  ){
 
             }
+            */
         }
        return null;
     }
