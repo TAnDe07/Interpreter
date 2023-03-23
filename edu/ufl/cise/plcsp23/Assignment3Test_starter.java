@@ -1024,5 +1024,20 @@ class Assignment3Test_starter {
 		});
 	}
 
+	/// Graded
+
+	@Test
+	void test32() throws PLCException {
+		assertTimeoutPreemptively(Duration.ofMillis(TIMEOUT_MILLIS), () -> {
+			String input = """
+                    image img(int a){}
+                    """;
+			assertThrows(SyntaxException.class, () -> {
+				@SuppressWarnings("unused")
+				AST ast = getAST(input);
+			});
+		});
+	}
+
 
 }
