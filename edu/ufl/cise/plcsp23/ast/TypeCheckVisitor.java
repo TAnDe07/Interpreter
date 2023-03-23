@@ -3,6 +3,7 @@ package edu.ufl.cise.plcsp23.ast;
 import edu.ufl.cise.plcsp23.*;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class TypeCheckVisitor implements ASTVisitor {
 
@@ -204,10 +205,12 @@ public class TypeCheckVisitor implements ASTVisitor {
             error("undefined identifier " + name);
         }
 
-        check(dec != null, identExpr, "undefined identifier " + name);
-        check(dec.isAssigned(), identExpr, "using uninitialized variable");
-        identExpr.setDec(dec); // save declaration--will be useful later.
-        Type type = dec.getType();
+        if (dec.getInitializer() == null) {
+            error("using uninitialized variable");
+        }
+
+        // identExpr.setDec(dec); // save declaration--will be useful later.
+        Type type = dec.getNameDef().getType();
         identExpr.setType(type);
         return type;
     }
