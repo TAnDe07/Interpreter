@@ -1,6 +1,7 @@
 package edu.ufl.cise.plcsp23.ast;
 
-import edu.ufl.cise.plcsp23.PLCException;
+import edu.ufl.cise.plcsp23.*;
+
 import java.util.HashMap;
 
 public class TypeCheckVisitor implements ASTVisitor {
@@ -21,17 +22,9 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     SymbolTable symbolTable = new SymbolTable();
 
-    private void check(boolean condition, ASTNode node, String message) throws TypeCheckException {
-        if (!condition) {
-            throw new TypeCheckException(message, node.getSourceLoc());
-        }
-    }
-
     private boolean assignmentCompatible(Type targetType, Type rhsType) {
-        return (targetType == rhsType
-                || targetType == Type.STRING && rhsType == Type.INT
-                || targetType == Type.STRING && rhsType == Type.BOOLEAN
-        );
+        return (targetType == rhsType || targetType == Type.STRING && rhsType == Type.INT || targetType
+                == Type.STRING && rhsType == Type.BOOLEAN);
     }
 
     @Override
@@ -41,41 +34,111 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCException {
-        Kind op = binaryExpr.getOp().getKind();
+        Token.Kind op = binaryExpr.getOp();
         Type leftType = (Type) binaryExpr.getLeft().visit(this, arg);
         Type rightType = (Type) binaryExpr.getRight().visit(this, arg);
         Type resultType = null;
-        switch(op) {//AND, OR, PLUS, MINUS, TIMES, DIV, MOD, EQUALS, NOT_EQUALS, LT, LE, GT,GE
-            case EQUALS,NOT_EQUALS -> {
-                check(leftType == rightType, binaryExpr, "incompatible types for comparison");
-                resultType = Type.BOOLEAN;
+        switch(op) {
+            case EQ -> { // ==
+                if (leftType != rightType) {
+                    error("incompatible types for comparison");
+                }
+                if (leftType == Type.VOID) {
+                    error("void is not a binary expression type");
+                }
+                resultType = Type.INT;
             }
-            case PLUS -> {
-                if (leftType == Type.INT && rightType == Type.INT) resultType = Type.INT;
-                else if (leftType == Type.STRING && rightType == Type.STRING) resultType = Type.STRING;
-                else if (leftType == Type.BOOLEAN && rightType == Type.BOOLEAN) resultType = Type.BOOLEAN;
-                else check(false, binaryExpr, "incompatible types for operator");
+            case PLUS -> { // +
+                if (leftType != rightType) {
+                    error("incompatible types for addition");
+                }
+                if (leftType == Type.VOID) {
+                    error("void is not a binary expression type");
+                }
+                resultType = leftType;
             }
-            case MINUS -> {
-                if (leftType == Type.INT && rightType == Type.INT) resultType = Type.INT;
-                else if (leftType == Type.STRING && rightType == Type.STRING) resultType = Type.STRING;
-                else check(false, binaryExpr, "incompatible types for operator");
+            case MINUS -> { // -
+                if (leftType != rightType) {
+                    error("incompatible types for addition");
+                }
+                if (leftType == Type.VOID) {
+                    error("void is not a binary expression type");
+                }
+                if (leftType == Type.STRING) {
+                    error("incompatible type for subtraction (string)");
+                }
+                resultType = leftType;
             }
-            case TIMES -> {
-                if (leftType == Type.INT && rightType == Type.INT) resultType = Type.INT;
-                else if (leftType == Type.BOOLEAN && rightType == Type.BOOLEAN) resultType = Type.BOOLEAN;
-                else check(false, binaryExpr, "incompatible types for operator");
+            case TIMES, DIV, MOD -> { // *, /, %
+                if (leftType == Type.INT) {
+                    if (rightType != Type.INT) {
+                        error("right type incompatible with int");
+                    }
+                    else {
+                        resultType = Type.INT;
+                    }
+                }
+                else if (leftType == Type.PIXEL) {
+                    if (rightType == Type.INT) {
+                        resultType = Type.PIXEL;
+                    }
+                    else if (rightType == Type.PIXEL) {
+                        resultType = Type.PIXEL;
+                    }
+                    else {
+                        error("right type incompatible with pixel");
+                    }
+                }
+                else if (leftType == Type.IMAGE) {
+                    if (rightType == Type.INT) {
+                        resultType = Type.IMAGE;
+                    }
+                    else if (rightType == Type.IMAGE) {
+                        resultType = Type.IMAGE;
+                    }
+                    else {
+                        error("right type incompatible with image");
+                    }
+                }
+                else {
+                    error("incompatible left type");
+                }
+
             }
-            case DIV -> {
-                if (leftType == Type.INT && rightType == Type.INT) resultType = Type.INT;
-                else check(false, binaryExpr, "incompatible types for operator");
+            case LT, LE, GT, GE, OR, AND -> { // <, <=, >, >=, ||, &&
+                if (leftType != rightType) {
+                    error("incompatible types for comparison");
+                }
+                if (leftType != Type.INT) {
+                    error("int must be used");
+                }
+                resultType = Type.INT;
             }
-            case LT, LE, GT, GE -> {
-                if (leftType == rightType) resultType = Type.BOOLEAN;
-                else check(false, binaryExpr, "incompatible types for operator");
+            case BITAND, BITOR -> {
+                if (leftType != rightType) {
+                    error("incompatible types for comparison");
+                }
+                if (leftType != Type.PIXEL) {
+                    error("pixel must be used");
+                }
+                resultType = Type.PIXEL;
+            }
+            case EXP -> {
+                if (rightType != Type.INT) {
+                    error("right must be int");
+                }
+                if (leftType == Type.INT) {
+                    resultType = Type.INT;
+                }
+                else if (leftType == Type.PIXEL) {
+                    resultType = Type.PIXEL;
+                }
+                else {
+                    error("left type incompatible");
+                }
             }
             default -> {
-                throw new Exception("compiler error");
+                error("compiler error");
             }
         }
         binaryExpr.setType(resultType);
@@ -127,6 +190,11 @@ public class TypeCheckVisitor implements ASTVisitor {
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCException {
         String name = identExpr.getName();
         Declaration dec = symbolTable.lookup(name);
+
+        if (dec == null) {
+            error("undefined identifier " + name);
+        }
+
         check(dec != null, identExpr, "undefined identifier " + name);
         check(dec.isAssigned(), identExpr, "using uninitialized variable");
         identExpr.setDec(dec); // save declaration--will be useful later.
@@ -215,5 +283,9 @@ public class TypeCheckVisitor implements ASTVisitor {
     @Override
     public Object visitZExpr(ZExpr zExpr, Object arg) throws PLCException {
         return null;
+    }
+
+    private void error(String message) throws TypeCheckException {
+        throw new TypeCheckException(message);
     }
 }
