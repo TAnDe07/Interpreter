@@ -3,6 +3,7 @@ package edu.ufl.cise.plcsp23.ast;
 import edu.ufl.cise.plcsp23.*;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class TypeCheckVisitor implements ASTVisitor {
 
@@ -219,6 +220,11 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCException {
+        if (nameDef.dimension != null) {
+            //nameDef.type = ?
+        }
+        nameDef.ident.getName();
+        // symbolTable.insert(nameDef, ?);
         return null;
     }
 
@@ -245,8 +251,8 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCException {
-        List<ASTNode> decsAndStatements = program.getDecsAndStatements();
-        for (ASTNode node : decsAndStatements) {
+        List<AST> decsAndStatements = program.getDecsAndStatements();
+        for (AST node : decsAndStatements) {
             node.visit(this, arg);
         }
         return program;
@@ -271,7 +277,25 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitUnaryExpr(UnaryExpr unaryExpr, Object arg) throws PLCException {
-        return null;
+        Token.Kind op = unaryExpr.getOp();
+        Type rightType = (Type) unaryExpr.getE().visit(this, arg);
+        Type resultType = null;
+        if (op == IToken.Kind.BANG) {
+            if (rightType != Type.INT || rightType != Type.PIXEL) {
+                error("incompatible types for unary");
+            }
+            resultType = unaryExpr.type;
+        }
+        else if (op == IToken.Kind.MINUS ||
+                op == IToken.Kind.RES_sin ||
+                op == IToken.Kind.RES_cos ||
+                op == IToken.Kind.RES_atan) {
+            if (rightType != Type.INT) {
+                error("incompatible types for unary");
+            }
+            resultType = unaryExpr.type;
+        }
+        return resultType;
     }
 
     @Override
@@ -286,7 +310,10 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitWriteStatement(WriteStatement statementWrite, Object arg) throws PLCException {
-        return null;
+        if (statementWrite.e == null) {
+            return null; //Dk, error maybe?
+        }
+        return statementWrite.e;
     }
 
     @Override
