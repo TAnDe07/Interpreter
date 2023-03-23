@@ -23,23 +23,10 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     SymbolTable symbolTable = new SymbolTable();
 
-    private boolean assignmentCompatible(Type targetType, Type rhsType) {
-        return (targetType == rhsType || targetType == Type.STRING && rhsType == Type.INT || targetType
-                == Type.STRING && rhsType == Type.BOOLEAN);
-    }
-
     @Override
     public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
         return null;
     }
-
-
-    private void check(boolean condition, AST node, String message) throws TypeCheckException {
-        if (!condition) {
-            throw new TypeCheckException(message, node.getSourceLoc());
-        }
-    }
-
 
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCException {
@@ -167,17 +154,56 @@ public class TypeCheckVisitor implements ASTVisitor {
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCException {
         String name = declaration.nameDef.toString();
-        boolean inserted = symbolTable.insert(name,declaration);
-        check(inserted, declaration, "variable " + name + "already declared");
+        NameDef nameDef = declaration.getNameDef();
+        boolean inserted = symbolTable.insert(name,declaration); // false if name present
+        if (!inserted) {
+            error("variable " + name + "already declared");
+        }
+        // NameDef is properly Typed
+        nameDef.visit(this, arg);
+        // If present, Expr.type must be properly typed and assignment compatible with NameDef.type.
+        // It is not allowed to refer to the name being defined.
         Expr initializer = declaration.getInitializer();
         if (initializer != null) {
-            //infer type of initializer
-            Type initializerType = (Type) initializer.visit(this,arg);
-            check(assignmentCompatible(declaration.initializer.getType(), initializerType),declaration,
-                    "type of expression and declared type do not match");
-            // declaration.setAssigned(true); ??
+            // infer type of initializer
+            Type initializerType = initializer.getType();
+            initializer.visit(this, arg);
+            switch (nameDef.getType()) {
+                case IMAGE -> {
+                    if (initializerType == Type.INT || initializerType == Type.VOID) {
+                        error("invalid expr type for image nameDef");
+                    }
+                }
+                case PIXEL -> {
+                    if (initializerType != Type.INT && initializerType != Type.PIXEL) {
+                        error("invalid expr type for pixel nameDef");
+                    }
+                }
+                case INT -> {
+                    if (initializerType != Type.INT && initializerType != Type.PIXEL) {
+                        error("invalid expr type for int nameDef");
+                    }
+                }
+                case STRING -> {
+                    if (initializerType == Type.VOID) {
+                        error("invalid expr type for string nameDef");
+                    }
+                }
+                case VOID -> {
+                    error("nameDef cannot be void");
+                }
+            }
+
         }
-        return null;
+        // If NameDef.Type == image then either it has an initializer (Expr != null)
+        //or NameDef.dimension != null, or both
+        if (nameDef.getType() == Type.IMAGE) {
+            if (initializer == null && nameDef.getDimension() == null) {
+                error("nameDef has both null expr and dimension");
+            }
+        }
+
+        return declaration;
     }
 
 
@@ -253,12 +279,15 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCException {
-        List<AST> decsAndStatements = program.getDecsAndStatements();
-        for (AST node : decsAndStatements) {
-            node.visit(this, arg);
+        // call enter scope on symbol table
+        // check all NameDefs are properly typed -> call visit function on all NameDefs
+        for (int i = 0; i < program.getParamList().size(); i++) {
+            visitNameDef(program.getParamList().get(i), arg);
         }
+        // check if block is properly typed -> call visit function on block
+        visitBlock(program.getBlock(), arg);
+        // call leave scope on symbol table
         return program;
-
     }
 
     @Override

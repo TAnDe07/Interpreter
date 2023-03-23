@@ -30,122 +30,122 @@ public class CompilerComponentFactory {
         return new ASTVisitor() {
             @Override
             public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
-                return visitAssignmentStatement(statementAssign, arg);
+                return null;
             }
 
             @Override
             public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCException {
-                return visitBinaryExpr(binaryExpr, arg);
+                return null;
             }
 
             @Override
             public Object visitBlock(Block block, Object arg) throws PLCException {
-                return visitBlock(block, arg);
+                return null;
             }
 
             @Override
             public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws PLCException {
-                return visitConditionalExpr(conditionalExpr, arg);
+                return null;
             }
 
             @Override
             public Object visitDeclaration(Declaration declaration, Object arg) throws PLCException {
-                return visitDeclaration(declaration, arg);
+                return null;
             }
 
             @Override
             public Object visitDimension(Dimension dimension, Object arg) throws PLCException {
-                return visitDimension(dimension, arg);
+                return null;
             }
 
             @Override
             public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCException {
-                return visitExpandedPixelExpr(expandedPixelExpr, arg);
+                return null;
             }
 
             @Override
             public Object visitIdent(Ident ident, Object arg) throws PLCException {
-                return visitIdent(ident, arg);
+                return null;
             }
 
             @Override
             public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCException {
-                return visitIdentExpr(identExpr, arg);
+                return null;
             }
 
             @Override
             public Object visitLValue(LValue lValue, Object arg) throws PLCException {
-                return visitLValue(lValue, arg);
+                return null;
             }
 
             @Override
             public Object visitNameDef(NameDef nameDef, Object arg) throws PLCException {
-                return visitNameDef(nameDef, arg);
+                return null;
             }
 
             @Override
             public Object visitNumLitExpr(NumLitExpr numLitExpr, Object arg) throws PLCException {
-                return visitNumLitExpr(numLitExpr, arg);
+                return null;
             }
 
             @Override
             public Object visitPixelFuncExpr(PixelFuncExpr pixelFuncExpr, Object arg) throws PLCException {
-                return visitPixelFuncExpr(pixelFuncExpr, arg);
+                return null;
             }
 
             @Override
             public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCException {
-                return visitPixelSelector(pixelSelector, arg);
+                return null;
             }
 
             @Override
             public Object visitPredeclaredVarExpr(PredeclaredVarExpr predeclaredVarExpr, Object arg) throws PLCException {
-                return visitPredeclaredVarExpr(predeclaredVarExpr, arg);
+                return null;
             }
 
             @Override
             public Object visitProgram(Program program, Object arg) throws PLCException {
-                return visitProgram(program, arg);
+                return null;
             }
 
             @Override
             public Object visitRandomExpr(RandomExpr randomExpr, Object arg) throws PLCException {
-                return visitRandomExpr(randomExpr, arg);
+                return null;
             }
 
             @Override
             public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws PLCException {
-                return visitReturnStatement(returnStatement, arg);
+                return null;
             }
 
             @Override
             public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws PLCException {
-                return visitStringLitExpr(stringLitExpr, arg);
+                return null;
             }
 
             @Override
             public Object visitUnaryExpr(UnaryExpr unaryExpr, Object arg) throws PLCException {
-                return visitUnaryExpr(unaryExpr, arg);
+                return null;
             }
 
             @Override
             public Object visitUnaryExprPostFix(UnaryExprPostfix unaryExprPostfix, Object arg) throws PLCException {
-                return visitUnaryExprPostFix(unaryExprPostfix, arg);
+                return null;
             }
 
             @Override
             public Object visitWhileStatement(WhileStatement whileStatement, Object arg) throws PLCException {
-                return visitWhileStatement(whileStatement, arg);
+                return null;
             }
 
             @Override
             public Object visitWriteStatement(WriteStatement statementWrite, Object arg) throws PLCException {
-                return visitWriteStatement(statementWrite, arg);
+                return null;
             }
 
             @Override
             public Object visitZExpr(ZExpr zExpr, Object arg) throws PLCException {
-                return visitZExpr(zExpr, arg);
+                return null;
             }
         };
     }
