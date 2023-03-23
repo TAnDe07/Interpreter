@@ -513,7 +513,7 @@ public class Parser implements IParser {
         return new LValue(firstToken, i, pix, color);
     }
 
-    //Statement = LValue = Expr | write Expr | while Expr Block
+    //Statement = LValue = Expr | write Expr | while Expr Block | :Expr
     public Statement statement() throws SyntaxException, LexicalException {
         IToken firstToken = currToken; // LValue or write or while
         Expr expr = null;
@@ -538,6 +538,12 @@ public class Parser implements IParser {
                 Block block = block(); // currToken = }
                 currToken = scanner.next(); // .
                 return new WhileStatement(firstToken, expr, block);
+            }
+            //NEW ASSIGNMENT 4
+            case COLON -> {
+                currToken = scanner.next(); // expr
+                expr = expr();
+                return new ReturnStatement(firstToken, expr);
             }
             default -> { // no statement
                 return null;
