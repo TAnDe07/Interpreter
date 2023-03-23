@@ -25,7 +25,40 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
-        return null;
+        // LValue is properly typed
+        statementAssign.getLv().visit(this, arg);
+        // Expr is properly typed
+        statementAssign.getE().visit(this, arg);
+        Expr e = statementAssign.getE();
+        Type eType = e.getType();
+        // LValue.type is assignment compatible with Expr.type
+        switch (statementAssign.getLv().getIdent().getDef().getType()) {
+            case IMAGE -> {
+                if (eType == Type.INT || eType == Type.VOID) {
+                    error("invalid expr type for image LValue");
+                }
+            }
+            case PIXEL -> {
+                if (eType != Type.INT && eType != Type.PIXEL) {
+                    error("invalid expr type for pixel LValue");
+                }
+            }
+            case INT -> {
+                if (eType != Type.INT && eType != Type.PIXEL) {
+                    error("invalid expr type for int LValue");
+                }
+            }
+            case STRING -> {
+                if (eType == Type.VOID) {
+                    error("invalid expr type for string LValue");
+                }
+            }
+            case VOID -> {
+                error("LValue cannot be void");
+            }
+        }
+
+        return statementAssign;
     }
 
     @Override
@@ -168,6 +201,7 @@ public class TypeCheckVisitor implements ASTVisitor {
             // infer type of initializer
             Type initializerType = initializer.getType();
             initializer.visit(this, arg);
+            // not sure if this checking is correct
             switch (nameDef.getType()) {
                 case IMAGE -> {
                     if (initializerType == Type.INT || initializerType == Type.VOID) {
