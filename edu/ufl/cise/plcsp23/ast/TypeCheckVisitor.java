@@ -539,6 +539,9 @@ public class TypeCheckVisitor implements ASTVisitor {
         if (whileStatement.guard.type == Type.INT) {
             return visitBlock(whileStatement.block, arg);
         }
+        else {
+            error("expr not properly typed");
+        }
         return null;
     }
 
