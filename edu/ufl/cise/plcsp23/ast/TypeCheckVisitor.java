@@ -228,8 +228,8 @@ public class TypeCheckVisitor implements ASTVisitor {
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCException {
         String name = declaration.nameDef.ident.getName();
         NameDef nameDef = declaration.getNameDef();
-        boolean inserted = symbolTable.insert(name, nameDef, symbolTable.currScope.peek()); // false if name present
-        if (!inserted) {
+        Pair inserted = symbolTable.lookup(name); // null if name not present
+        if (inserted != null) {
             error("variable " + name + "already declared");
         }
         // NameDef is properly Typed
