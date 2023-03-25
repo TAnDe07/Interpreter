@@ -19,13 +19,18 @@ public class TypeCheckVisitor implements ASTVisitor {
 
         // returns true if name successfully inserted in symbol table, false if already present
         public boolean insert(String name, NameDef nameDef, int scope) {
-            Pair pair = new Pair(nameDef, scope);
+            Pair pair = new Pair(nameDef, scope, false);
             return (entries.putIfAbsent(name, pair) == null);
         }
 
         // returns pair if present, or null if name not declared.
         public Pair lookup(String name) {
             return entries.get(name);
+        }
+
+        public void initialized(String name) {
+            Pair pair = new Pair(entries.get(name).getFirst(), entries.get(name).getSecond(), true);
+            entries.replace(name, pair);
         }
 
         public void enterScope(int scope) {
@@ -228,7 +233,6 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCException {
-        String name = declaration.nameDef.ident.getName();
         NameDef nameDef = declaration.getNameDef();
 
         // If present, Expr.type must be properly typed and assignment compatible with NameDef.type.
@@ -269,8 +273,12 @@ public class TypeCheckVisitor implements ASTVisitor {
         // It is not allowed to refer to the name being defined.
         // NameDef is properly Typed
         nameDef.visit(this, arg);
+        if (initializer != null) {
+            String name = nameDef.getIdent().getName();
+            symbolTable.initialized(name);
+        }
         // If NameDef.Type == image then either it has an initializer (Expr != null)
-        //or NameDef.dimension != null, or both
+        // or NameDef.dimension != null, or both
         if (nameDef.getType() == Type.IMAGE) {
             if (initializer == null && nameDef.getDimension() == null) {
                 error("nameDef has both null expr and dimension");
@@ -460,6 +468,8 @@ public class TypeCheckVisitor implements ASTVisitor {
         // check all NameDefs are properly typed -> call visit function on all NameDefs
         for (int i = 0; i < program.getParamList().size(); i++) {
             visitNameDef(program.getParamList().get(i), arg);
+            String name = program.getParamList().get(i).getIdent().getName();
+            symbolTable.initialized(name);
         }
         // check if block is properly typed -> call visit function on block
         visitBlock(program.getBlock(), arg);
@@ -479,28 +489,38 @@ public class TypeCheckVisitor implements ASTVisitor {
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws PLCException {
         // Expr is properly typed
         returnStatement.getE().visit(this, arg);
+
+        if (returnStatement.getE() instanceof IdentExpr) {
+            String name = ((IdentExpr) returnStatement.getE()).getName();
+            Pair pair = symbolTable.lookup(name);
+            if (!pair.getInitialized()) {
+                error("return value not initialized");
+            }
+        }
+
         Type type = returnStatement.getE().getType();
+
         // Expr.type is assignment compatible with Program.type (where Program is root of ast)
         // not sure if this checking is correct
         switch (progType) {
             case IMAGE -> {
                 if (type == Type.INT || type == Type.VOID) {
-                    error("invalid return type for image nameDef");
+                    error("invalid return type for image");
                 }
             }
             case PIXEL -> {
                 if (type != Type.INT && type != Type.PIXEL) {
-                    error("invalid return type for pixel nameDef");
+                    error("invalid return type for pixel");
                 }
             }
             case INT -> {
                 if (type != Type.INT && type != Type.PIXEL) {
-                    error("invalid return type for int nameDef");
+                    error("invalid return type for int");
                 }
             }
             case STRING -> {
                 if (type == Type.VOID) {
-                    error("invalid return type for string nameDef");
+                    error("invalid return type for string");
                 }
             }
             case VOID -> {
