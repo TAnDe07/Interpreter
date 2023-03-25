@@ -11,6 +11,7 @@ import java.util.Stack;
 public class TypeCheckVisitor implements ASTVisitor {
 
     int scopeCount = 0;
+    Type progType;
 
     public static class SymbolTable {
         HashMap<String, Pair> entries = new HashMap<>();
@@ -452,6 +453,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCException {
+        progType = program.getType();
         // call enter scope on symbol table
         symbolTable.enterScope(scopeCount);
         scopeCount++;
@@ -477,33 +479,34 @@ public class TypeCheckVisitor implements ASTVisitor {
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws PLCException {
         // Expr is properly typed
         returnStatement.getE().visit(this, arg);
+        Type type = returnStatement.getE().getType();
         // Expr.type is assignment compatible with Program.type (where Program is root of ast)
         // not sure if this checking is correct
-        /*switch (returnStatement.getE().getType()) {
+        switch (progType) {
             case IMAGE -> {
-                if (initializerType == Type.INT || initializerType == Type.VOID) {
-                    error("invalid expr type for image nameDef");
+                if (type == Type.INT || type == Type.VOID) {
+                    error("invalid return type for image nameDef");
                 }
             }
             case PIXEL -> {
-                if (initializerType != Type.INT && initializerType != Type.PIXEL) {
-                    error("invalid expr type for pixel nameDef");
+                if (type != Type.INT && type != Type.PIXEL) {
+                    error("invalid return type for pixel nameDef");
                 }
             }
             case INT -> {
-                if (initializerType != Type.INT && initializerType != Type.PIXEL) {
-                    error("invalid expr type for int nameDef");
+                if (type != Type.INT && type != Type.PIXEL) {
+                    error("invalid return type for int nameDef");
                 }
             }
             case STRING -> {
-                if (initializerType == Type.VOID) {
-                    error("invalid expr type for string nameDef");
+                if (type == Type.VOID) {
+                    error("invalid return type for string nameDef");
                 }
             }
             case VOID -> {
-                error("nameDef cannot be void");
+                error("there should not be a return statement");
             }
-        }*/
+        }
         return returnStatement;
     }
 
