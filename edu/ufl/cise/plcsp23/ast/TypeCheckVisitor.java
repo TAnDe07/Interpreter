@@ -233,15 +233,14 @@ public class TypeCheckVisitor implements ASTVisitor {
         if (inserted != null) {
             error("variable " + name + "already declared");
         }
-        // NameDef is properly Typed
-        nameDef.visit(this, arg);
+
         // If present, Expr.type must be properly typed and assignment compatible with NameDef.type.
-        // It is not allowed to refer to the name being defined.
         Expr initializer = declaration.getInitializer();
         if (initializer != null) {
             // infer type of initializer
-            Type initializerType = initializer.getType();
             initializer.visit(this, arg);
+            Type initializerType = declaration.getInitializer().getType();
+
             // not sure if this checking is correct
             switch (nameDef.getType()) {
                 case IMAGE -> {
@@ -270,6 +269,9 @@ public class TypeCheckVisitor implements ASTVisitor {
             }
 
         }
+        // It is not allowed to refer to the name being defined.
+        // NameDef is properly Typed
+        nameDef.visit(this, arg);
         // If NameDef.Type == image then either it has an initializer (Expr != null)
         //or NameDef.dimension != null, or both
         if (nameDef.getType() == Type.IMAGE) {
@@ -548,7 +550,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitUnaryExprPostFix(UnaryExprPostfix unaryExprPostfix, Object arg) throws PLCException {
-        Type prim = unaryExprPostfix.getPrimary().type;
+
         Type result = null;
         PixelSelector pixel = unaryExprPostfix.getPixel();
         ColorChannel chan = unaryExprPostfix.getColor();
@@ -559,6 +561,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
         // PrimaryExpr is properly typed
         unaryExprPostfix.getPrimary().visit(this, arg);
+        Type prim = unaryExprPostfix.getPrimary().getType();
 
         // at least one of PixelSelector or ChannelSelector should be present
         if (pixel == null && chan == null) {
