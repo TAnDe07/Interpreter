@@ -6,20 +6,33 @@ import edu.ufl.cise.plcsp23.Token;
 import edu.ufl.cise.plcsp23.TypeCheckException;
 
 import java.util.HashMap;
+import java.util.Stack;
 
 public class TypeCheckVisitor implements ASTVisitor {
 
+    int scopeCount = 0;
+
     public static class SymbolTable {
-        HashMap<String, Declaration> entries = new HashMap<>();
+        HashMap<String, Pair> entries = new HashMap<>();
+        Stack<Integer> currScope = new Stack<Integer>();
 
         // returns true if name successfully inserted in symbol table, false if already present
-        public boolean insert(String name, Declaration declaration) {
-            return (entries.putIfAbsent(name, declaration) == null);
+        public boolean insert(String name, NameDef nameDef, int scope) {
+            Pair pair = new Pair(nameDef, scope);
+            return (entries.putIfAbsent(name, pair) == null);
         }
 
-        // returns Declaration if present, or null if name not declared.
-        public Declaration lookup(String name) {
+        // returns pair if present, or null if name not declared.
+        public Pair lookup(String name) {
             return entries.get(name);
+        }
+
+        public void enterScope(int scope) {
+            this.currScope.push(scope);
+        }
+
+        public void leaveScope() {
+            currScope.pop();
         }
     }
 
@@ -213,9 +226,9 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCException {
-        String name = declaration.nameDef.toString();
+        String name = declaration.nameDef.ident.getName();
         NameDef nameDef = declaration.getNameDef();
-        boolean inserted = symbolTable.insert(name,declaration); // false if name present
+        boolean inserted = symbolTable.insert(name, nameDef, symbolTable.currScope.peek()); // false if name present
         if (!inserted) {
             error("variable " + name + "already declared");
         }
@@ -285,17 +298,24 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCException {
+        // Expr0, Expr1, and Expr2 are properly typed
+        expandedPixelExpr.getBluExpr().visit(this, arg);
+        expandedPixelExpr.getGrnExpr().visit(this, arg);
+        expandedPixelExpr.getRedExpr().visit(this, arg);
+
         Type expr1 = expandedPixelExpr.getBluExpr().type;
         Type expr2 = expandedPixelExpr.getGrnExpr().type;
         Type expr3 = expandedPixelExpr.getRedExpr().type;
         Type result = null;
-
+        // Expr0.type == int && Expr1.type == int && Expr2.type == int
         if (expr1 == Type.INT && expr2 == Type.INT && expr3 == Type.INT) {
             result = Type.PIXEL;
         }
         else {
             error("Wrong type for expandedPixelExpr");
         }
+        // ExpandedPixelExpr.type ← pixel
+        expandedPixelExpr.setType(result);
         return result;
     }
 
@@ -324,18 +344,24 @@ public class TypeCheckVisitor implements ASTVisitor {
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCException {
         String name = identExpr.getName();
-        Declaration dec = symbolTable.lookup(name);
+        Pair dec = symbolTable.lookup(name);
 
+        // IdentExpr.name has been defined
         if (dec == null) {
             error("undefined identifier " + name);
         }
 
-        if (dec.getInitializer() == null) {
+        /*if (dec.getInitializer() == null) {
             error("using uninitialized variable");
+        }*/
+
+        // is visible in this scope
+        if (symbolTable.currScope.search(dec.getSecond()) == -1) {
+            error("ident expression is out of scope");
         }
 
         // identExpr.setDec(dec); // save declaration--will be useful later.
-        Type type = dec.getNameDef().getType();
+        Type type = dec.getFirst().getType();
         identExpr.setType(type);
         return type;
     }
@@ -343,18 +369,23 @@ public class TypeCheckVisitor implements ASTVisitor {
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCException {
         // Ident has been declared
-        String name = lValue.getIdent().getDef().toString();
-        if (symbolTable.lookup(name) == null) { // null if name not declared
+        String name = lValue.getIdent().getName();
+        Pair pair = symbolTable.lookup(name);
+        if (pair == null) { // null if name not declared
             error("ident not declared");
         }
         // Ident is visible in this scope
+        if (symbolTable.currScope.search(pair.getSecond()) == -1) {
+            error("ident expression is out of scope");
+        }
+
         return lValue;
     }
 
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCException {
         Dimension dim = nameDef.getDimension();
-        String name = nameDef.toString();
+        String name = nameDef.ident.getName();
 
         if (dim != null) {
             // If (Dimension != ε) Type == image
@@ -365,7 +396,7 @@ public class TypeCheckVisitor implements ASTVisitor {
             dim.visit(this, arg);
         }
         // Ident.name has not been previously declared in this scope.
-        // need to edit to include scope
+        // need to edit to include scope??
         if (symbolTable.lookup(name) != null) { // null if name not declared
             error("ident already declared");
         }
@@ -374,6 +405,7 @@ public class TypeCheckVisitor implements ASTVisitor {
             error("type cannot be void");
         }
         // Insert (name, NameDef) into symbol table.
+        symbolTable.insert(name, nameDef, symbolTable.currScope.peek());
 
         return nameDef;
     }
@@ -410,6 +442,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitPredeclaredVarExpr(PredeclaredVarExpr predeclaredVarExpr, Object arg) throws PLCException {
+        // PredeclaredVarExpr.type ← int
         predeclaredVarExpr.setType(Type.INT);
         return Type.INT;
     }
@@ -417,6 +450,8 @@ public class TypeCheckVisitor implements ASTVisitor {
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCException {
         // call enter scope on symbol table
+        symbolTable.enterScope(scopeCount);
+        scopeCount++;
         // check all NameDefs are properly typed -> call visit function on all NameDefs
         for (int i = 0; i < program.getParamList().size(); i++) {
             visitNameDef(program.getParamList().get(i), arg);
@@ -424,11 +459,13 @@ public class TypeCheckVisitor implements ASTVisitor {
         // check if block is properly typed -> call visit function on block
         visitBlock(program.getBlock(), arg);
         // call leave scope on symbol table
+        symbolTable.leaveScope();
         return program;
     }
 
     @Override
     public Object visitRandomExpr(RandomExpr randomExpr, Object arg) throws PLCException {
+        // RandExpr.type ← int
         randomExpr.setType(Type.INT);
         return Type.INT;
     }
@@ -469,6 +506,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws PLCException {
+        // StringLitExpr.type ← string
         stringLitExpr.setType(Type.STRING);
         return Type.STRING;
     }
@@ -476,6 +514,7 @@ public class TypeCheckVisitor implements ASTVisitor {
     @Override
     public Object visitUnaryExpr(UnaryExpr unaryExpr, Object arg) throws PLCException {
         Token.Kind op = unaryExpr.getOp();
+        // Expr properly typed
         Type rightType = (Type) unaryExpr.getE().visit(this, arg);
         Type resultType = null;
         if (op == IToken.Kind.BANG) {
@@ -498,6 +537,11 @@ public class TypeCheckVisitor implements ASTVisitor {
             }
             resultType = Type.INT;;
         }
+        else {
+            error("incompatible op for unary");
+        }
+        // UnaryExpr.type ← result type
+        unaryExpr.setType(resultType);
         return resultType;
     }
 
@@ -505,60 +549,83 @@ public class TypeCheckVisitor implements ASTVisitor {
     public Object visitUnaryExprPostFix(UnaryExprPostfix unaryExprPostfix, Object arg) throws PLCException {
         Type prim = unaryExprPostfix.getPrimary().type;
         Type result = null;
-
-        //DK??
-        if (visitPixelSelector(unaryExprPostfix.getPixel(), arg) != Type.INT && unaryExprPostfix.getColor() == null) {
-            error("pixel selector and channel selector does not exist in UnaryExprPostFix");
+        PixelSelector pixel = unaryExprPostfix.getPixel();
+        ColorChannel chan = unaryExprPostfix.getColor();
+        // If present, PixelSelector is properly typed
+        if (pixel != null) {
+            pixel.visit(this, arg);
         }
-        else if (prim == Type.PIXEL) {
-            if (visitPixelSelector(unaryExprPostfix.getPixel(), arg) == Type.INT) {
-                error("primType : pixel - pixel selector exists in UnaryExprPostFix");
+
+        // PrimaryExpr is properly typed
+        unaryExprPostfix.getPrimary().visit(this, arg);
+
+        // at least one of PixelSelector or ChannelSelector should be present
+        if (pixel == null && chan == null) {
+            error("pixel selector and channel selector do not exist in UnaryExprPostFix");
+        }
+
+
+        if (prim == Type.PIXEL) {
+            if (pixel != null) {
+                error("pixel selector exists in UnaryExprPostFix");
             }
-            else if (unaryExprPostfix.getColor() != null) {
-                result = Type.INT;
-            }
+
+            result = Type.INT;
         }
         else if (prim == Type.IMAGE) {
-            if (visitPixelSelector(unaryExprPostfix.getPixel(), arg) == Type.INT) {
-                if (unaryExprPostfix.getColor() != null) {
+            if (pixel != null) {
+                if (chan != null) {
+                    // both pixel and channel selectors
                     result = Type.INT;
                 }
-                else if (unaryExprPostfix.getColor() == null) {
+                else {
+                    // just pixel selector
                     result = Type.PIXEL;
                 }
             }
             else {
+                // just channel selector
                 result = Type.IMAGE;
             }
         }
+        unaryExprPostfix.setType(result);
        return result;
     }
 
     @Override
     public Object visitWhileStatement(WhileStatement whileStatement, Object arg) throws PLCException {
-        if (whileStatement.guard.type == Type.INT) {
-            return visitBlock(whileStatement.block, arg);
+        // Expr is properly typed
+        whileStatement.getGuard().visit(this, arg);
+
+        // Expr.type == int
+        if (whileStatement.getGuard().getType() != Type.INT) {
+            error("incorrect type for while statement");
         }
-        else {
-            error("expr not properly typed");
-        }
-        return null;
+
+        // enterScope
+        symbolTable.enterScope(scopeCount);
+        scopeCount++;
+
+        // Block is properly typed
+        whileStatement.getBlock().visit(this, arg);
+
+        // leaveScope
+        symbolTable.leaveScope();
+
+        return whileStatement;
     }
 
     @Override
     public Object visitWriteStatement(WriteStatement statementWrite, Object arg) throws PLCException {
-        //DK????
-        if (statementWrite.e.type == Type.INT ||
-                statementWrite.e.type == Type.STRING ||
-                statementWrite.e.type == Type.PIXEL ||
-                statementWrite.e.type == Type.IMAGE) {
-            return Type.STRING;
-        }
-        return null; //?????
+        // Expr is properly typed
+        statementWrite.getE().visit(this, arg);
+
+        return statementWrite;
     }
 
     @Override
     public Object visitZExpr(ZExpr zExpr, Object arg) throws PLCException {
+        // ZExpr.type ← int
         zExpr.setType(Type.INT);
         return Type.INT;
     }
