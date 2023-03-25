@@ -230,10 +230,6 @@ public class TypeCheckVisitor implements ASTVisitor {
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCException {
         String name = declaration.nameDef.ident.getName();
         NameDef nameDef = declaration.getNameDef();
-        Pair inserted = symbolTable.lookup(name); // null if name not present
-        if (inserted != null) {
-            error("variable " + name + "already declared");
-        }
 
         // If present, Expr.type must be properly typed and assignment compatible with NameDef.type.
         Expr initializer = declaration.getInitializer();
@@ -401,8 +397,12 @@ public class TypeCheckVisitor implements ASTVisitor {
         }
         // Ident.name has not been previously declared in this scope.
         // need to edit to include scope??
-        if (symbolTable.lookup(name) != null) { // null if name not declared
-            error("ident already declared");
+        Pair inserted = symbolTable.lookup(name);
+        if (inserted != null) { // null if name not declared
+            if (inserted.getSecond() == symbolTable.currScope.peek()) {
+                // already declared in scope
+                error("ident already declared");
+            }
         }
         // Type != void
         if (nameDef.getType() == Type.VOID) {
