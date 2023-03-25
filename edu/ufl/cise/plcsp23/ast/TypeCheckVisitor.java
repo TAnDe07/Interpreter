@@ -46,8 +46,9 @@ public class TypeCheckVisitor implements ASTVisitor {
         statementAssign.getE().visit(this, arg);
         Expr e = statementAssign.getE();
         Type eType = e.getType();
+        String name = statementAssign.getLv().getIdent().getName();
         // LValue.type is assignment compatible with Expr.type
-        switch (statementAssign.getLv().getIdent().getDef().getType()) {
+        switch (symbolTable.lookup(name).getFirst().getType()) {
             case IMAGE -> {
                 if (eType == Type.INT || eType == Type.VOID) {
                     error("invalid expr type for image LValue");
