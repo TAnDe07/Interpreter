@@ -527,7 +527,7 @@ public class TypeCheckVisitor implements ASTVisitor {
                 error("there should not be a return statement");
             }
         }
-        return returnStatement;
+       return null;
     }
 
     @Override
@@ -547,7 +547,7 @@ public class TypeCheckVisitor implements ASTVisitor {
             if (rightType == Type.INT) {
                 resultType = Type.INT;
             }
-            else if (rightType != Type.PIXEL) {
+            else if (rightType == Type.PIXEL) {
                 resultType = Type.PIXEL;
             }
             else {
