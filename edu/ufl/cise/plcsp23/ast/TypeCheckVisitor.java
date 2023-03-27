@@ -10,34 +10,62 @@ import java.util.Stack;
 
 public class TypeCheckVisitor implements ASTVisitor {
 
-    int scopeCount = 0;
+    int scopeCount = 1;
     Type progType;
 
     public static class SymbolTable {
-        HashMap<String, Pair> entries = new HashMap<>();
+        HashMap<Integer, HashMap<String, NameDef>> entries = new HashMap<>();
         Stack<Integer> currScope = new Stack<Integer>();
 
         // returns true if name successfully inserted in symbol table, false if already present
         public boolean insert(String name, NameDef nameDef, int scope) {
-            Pair pair = new Pair(nameDef, scope, false);
-            return (entries.putIfAbsent(name, pair) == null);
+            return (entries.get(scope).put(name, nameDef) == null);
+            //<String, NameDef> pair = new HashMap<>();
+            //pair.put(name, nameDef);
+            //return (entries.put(scope, pair) == null);
         }
 
-        // returns pair if present, or null if name not declared.
-        public Pair lookup(String name) {
-            return entries.get(name);
+        // visible in current scope
+        public NameDef lookupVisible(String name, int scope) {
+            for (int i = scope; i > 0; i--) {
+                if (entries.containsKey(i)) {
+                    if (entries.get(i).containsKey(name)) {
+                        return entries.get(i).get(name);
+                    }
+                }
+            }
+            return null;
+        }
+        //defined in current scope
+        public NameDef lookupScope(String name, int scope) {
+
+                if (entries.containsKey(scope)) {
+                    if (entries.get(scope).containsKey(name)) {
+                        return entries.get(scope).get(name);
+                    }
+                }
+
+            return null;
         }
 
-        public void initialized(String name) {
-            Pair pair = new Pair(entries.get(name).getFirst(), entries.get(name).getSecond(), true);
+
+
+        /*public void initialized(String name) {
+            HashMap pair = new HashMap<>();
+            pair.put(entries.get(name).get(currScope), true);
             entries.replace(name, pair);
-        }
+        }*/
 
         public void enterScope(int scope) {
             this.currScope.push(scope);
+            HashMap<String, NameDef> pair = new HashMap<>();
+            entries.put(scope, pair);
         }
 
         public void leaveScope() {
+            if(entries.containsKey(currScope.peek())) {
+                entries.remove(currScope.peek());
+            }
             currScope.pop();
         }
     }
@@ -54,7 +82,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         Type eType = e.type;
         String name = statementAssign.getLv().getIdent().getName();
         // LValue.type is assignment compatible with Expr.type
-        switch (symbolTable.lookup(name).getFirst().getType()) {
+        switch (symbolTable.lookupVisible(name, scopeCount).type) {
             case IMAGE -> {
                 if (eType == Type.INT || eType == Type.VOID) {
                     error("invalid expr type for image LValue");
@@ -275,7 +303,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         nameDef.visit(this, arg);
         if (initializer != null) {
             String name = nameDef.getIdent().getName();
-            symbolTable.initialized(name);
+            //symbolTable.initialized(name); (INITIALIZED)?????
         }
         // If NameDef.Type == image then either it has an initializer (Expr != null)
         // or NameDef.dimension != null, or both
@@ -352,9 +380,9 @@ public class TypeCheckVisitor implements ASTVisitor {
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCException {
         String name = identExpr.getName();
-        Pair dec = symbolTable.lookup(name);
+        NameDef dec = symbolTable.lookupVisible(name, scopeCount);
 
-        // IdentExpr.name has been defined
+        // IdentExpr.name has been defined && visible in scope?
         if (dec == null) {
             error("undefined identifier " + name);
         }
@@ -363,13 +391,13 @@ public class TypeCheckVisitor implements ASTVisitor {
             error("using uninitialized variable");
         }*/
 
-        // is visible in this scope
-        if (symbolTable.currScope.search(dec.getSecond()) == -1) {
+        /* is visible in this scope
+        if (symbolTable.entries.get(name).get(scopeCount) != null) {
             error("ident expression is out of scope");
-        }
+        }*/
 
         // identExpr.setDec(dec); // save declaration--will be useful later.
-        Type type = dec.getFirst().getType();
+        Type type = dec.getType();
         identExpr.setType(type);
         return type;
     }
@@ -378,14 +406,14 @@ public class TypeCheckVisitor implements ASTVisitor {
     public Object visitLValue(LValue lValue, Object arg) throws PLCException {
         // Ident has been declared
         String name = lValue.getIdent().getName();
-        Pair pair = symbolTable.lookup(name);
-        if (pair == null) { // null if name not declared
+        NameDef pair = symbolTable.lookupVisible(name, scopeCount);
+        if (pair == null) { // null if name not declared and out of scope
             error("ident not declared");
         }
-        // Ident is visible in this scope
-        if (symbolTable.currScope.search(pair.getSecond()) == -1) {
+        /* Ident is visible in this scope
+        if (symbolTable.entries.get(name).get(scopeCount) != null) {
             error("ident expression is out of scope");
-        }
+        }*/
 
         return lValue;
     }
@@ -405,12 +433,12 @@ public class TypeCheckVisitor implements ASTVisitor {
         }
         // Ident.name has not been previously declared in this scope.
         // need to edit to include scope??
-        Pair inserted = symbolTable.lookup(name);
+        NameDef inserted = symbolTable.lookupScope(name, scopeCount);
         if (inserted != null) { // null if name not declared
-            if (inserted.getSecond() == symbolTable.currScope.peek()) {
+            //if (inserted.getSecond() == symbolTable.currScope.peek()) {
                 // already declared in scope
                 error("ident already declared");
-            }
+            //}
         }
         // Type != void
         if (nameDef.getType() == Type.VOID) {
@@ -464,17 +492,18 @@ public class TypeCheckVisitor implements ASTVisitor {
         progType = program.getType();
         // call enter scope on symbol table
         symbolTable.enterScope(scopeCount);
-        scopeCount++;
+        // scopeCount++;
         // check all NameDefs are properly typed -> call visit function on all NameDefs
         for (int i = 0; i < program.getParamList().size(); i++) {
             visitNameDef(program.getParamList().get(i), arg);
             String name = program.getParamList().get(i).getIdent().getName();
-            symbolTable.initialized(name);
+            // symbolTable.initialized(name); (INITIALIZED)????
         }
         // check if block is properly typed -> call visit function on block
         visitBlock(program.getBlock(), arg);
         // call leave scope on symbol table
         symbolTable.leaveScope();
+        scopeCount--;
         return program;
     }
 
@@ -490,13 +519,13 @@ public class TypeCheckVisitor implements ASTVisitor {
         // Expr is properly typed
         returnStatement.getE().visit(this, arg);
 
-        if (returnStatement.getE() instanceof IdentExpr) {
+        /*if (returnStatement.getE() instanceof IdentExpr) {
             String name = ((IdentExpr) returnStatement.getE()).getName();
-            Pair pair = symbolTable.lookup(name);
+            NameDef pair = symbolTable.entries.get(name).get(scopeCount);
             if (!pair.getInitialized()) {
                 error("return value not initialized");
             }
-        }
+        }*/
 
         Type type = returnStatement.getE().getType();
 
@@ -630,14 +659,16 @@ public class TypeCheckVisitor implements ASTVisitor {
         }
 
         // enterScope
-        symbolTable.enterScope(scopeCount);
         scopeCount++;
+        symbolTable.enterScope(scopeCount);
+
 
         // Block is properly typed
         whileStatement.getBlock().visit(this, arg);
 
         // leaveScope
         symbolTable.leaveScope();
+        scopeCount--;
 
         return whileStatement;
     }
