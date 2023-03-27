@@ -51,7 +51,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         // Expr is properly typed
         statementAssign.getE().visit(this, arg);
         Expr e = statementAssign.getE();
-        Type eType = e.getType();
+        Type eType = e.type;
         String name = statementAssign.getLv().getIdent().getName();
         // LValue.type is assignment compatible with Expr.type
         switch (symbolTable.lookup(name).getFirst().getType()) {
@@ -226,7 +226,7 @@ public class TypeCheckVisitor implements ASTVisitor {
             error("true and false cases do not have same type");
         }
         // ConditionalExpr.type ← Expr1.type
-        conditionalExpr.setType(conditionalExpr.getGuard().getType());
+        conditionalExpr.setType(conditionalExpr.getTrueCase().getType());
 
         return conditionalExpr;
     }
