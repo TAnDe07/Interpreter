@@ -328,7 +328,7 @@ class TypeCheckTest_starter {
 					:g.
 				}
 				""";
-		typeCheckError(input);
+		typeCheck(input);
 	}
 
 	@Test
@@ -337,6 +337,27 @@ class TypeCheckTest_starter {
 				int f(){
 					int g = 0.
 					:g.
+				}
+				""";
+		typeCheck(input);
+	}
+
+	@Test
+	void andInTermsOfItself() throws PLCException {
+		String input = """
+				int f(){
+					int g = 0 + g.
+				}
+				""";
+		typeCheckError(input);
+	}
+
+	@Test
+	void andAssignInTermsOfItself() throws PLCException {
+		String input = """
+				int f(){
+					int g.
+					g = g.
 				}
 				""";
 		typeCheck(input);
@@ -750,20 +771,31 @@ class TypeCheckTest_starter {
 	}
 
 	@Test
-	void andWriteError() throws PLCException {
+	void andWriteUninitialized() throws PLCException {
 		String input = """
 				void f(){
 					int this.
 					write this.
 				}
 				""";
-		typeCheckError(input);
+		typeCheck(input);
 	}
 
 	@Test
 	void andWhileStmt() throws PLCException {
 		String input = """
 				void f(int i){
+					while i {}.
+				}
+				""";
+		typeCheck(input);
+	}
+
+	@Test
+	void andWhileUninitialized() throws PLCException {
+		String input = """
+				void f(){
+					int i.
 					while i {}.
 				}
 				""";
@@ -913,4 +945,21 @@ class TypeCheckTest_starter {
 				""";
 		typeCheckError(input);
 	}
+
+	@Test
+	void andItsSeriouslyUninitialized() throws PLCException {
+		String input = """
+				void f() {
+					int i.
+					image [i, i] m.
+					pixel p = m[i, i].
+					m = if i ? m ? m.
+					write i.
+					while i {}.
+					write (i + i * i).
+				}
+				""";
+		typeCheck(input);
+	}
+
 }
