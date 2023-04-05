@@ -81,19 +81,8 @@ public class TypeCheckVisitor implements ASTVisitor {
         Expr e = statementAssign.getE();
         Type eType = e.type;
         String name = statementAssign.getLv().getIdent().getName();
-
-        Type lValueType = symbolTable.lookupVisible(name, scopeCount).type;;
-        if (statementAssign.getLv().getPixelSelector() != null) {
-            if (lValueType == Type.PIXEL) {
-                error("type pixel cannot have pixel selector");
-            }
-            else {
-                lValueType = Type.PIXEL;
-            }
-        }
-
         // LValue.type is assignment compatible with Expr.type
-        switch (lValueType) {
+        switch (symbolTable.lookupVisible(name, scopeCount).type) {
             case IMAGE -> {
                 if (eType == Type.INT || eType == Type.VOID) {
                     error("invalid expr type for image LValue");

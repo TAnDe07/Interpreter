@@ -46,6 +46,10 @@ public class Parser implements IParser {
 
         List<NameDef> paramList = new ArrayList<>();
 
+        if (currToken.getKind() == IToken.Kind.COMMA) {
+            error("comma before any parameters");
+        }
+
         while (currToken.getKind() != Token.Kind.RPAREN) {
             if (currToken.getKind() == Token.Kind.COMMA) {
                 currToken = scanner.next(); // next name def
@@ -81,10 +85,12 @@ public class Parser implements IParser {
             if (dec == null) { // there was no declaration
                 break;
             }
-            decList.add(dec);
-            currToken = scanner.next();
+            decList.add(dec); // currToken = .
             if (currToken.getKind() == Token.Kind.DOT) {
                 currToken = scanner.next(); // declaration or statement list
+                if (currToken.getKind() == IToken.Kind.DOT) {
+                    error("dot cannot start any grammar");
+                }
             }
         }
 
@@ -95,13 +101,22 @@ public class Parser implements IParser {
             if (stat == null) { // there was no statement
                 break;
             }
-            statList.add(stat);
-            currToken = scanner.next(); // .
+            statList.add(stat);  // currToken = .
             if (currToken.getKind() == Token.Kind.DOT) {
                 currToken = scanner.next(); // statement or }
+                if (currToken.getKind() == IToken.Kind.DOT) {
+                    error("dot cannot start any grammar");
+                }
+                if (currToken.getKind() == Token.Kind.RES_image || currToken.getKind() == Token.Kind.RES_pixel ||
+                        currToken.getKind() == Token.Kind.RES_int || currToken.getKind() == Token.Kind.RES_string ||
+                        currToken.getKind() == Token.Kind.RES_void) {
+                    error("declaration after statements begin");
+                }
             }
         }
-
+        if (currToken.getKind() != IToken.Kind.RCURLY) {
+            error("end of block not reached");
+        }
         return new Block(firstToken, decList, statList);
     }
 
@@ -135,6 +150,9 @@ public class Parser implements IParser {
             }
         }
         // just ident
+        if (currToken.getKind() != IToken.Kind.IDENT) {
+            error("reserved word used as ident");
+        }
         Ident i = new Ident(currToken);
         currToken = scanner.next(); // , or ) or
 
@@ -395,6 +413,7 @@ public class Parser implements IParser {
         if (currToken.getKind() == IToken.Kind.COLON) { // there is a channel selector
             currToken = scanner.next();
             color = channel_selector();
+            currToken = scanner.next(); // .
         }
 
         if (pix != null || color != null) {
@@ -494,7 +513,7 @@ public class Parser implements IParser {
         return new LValue(firstToken, i, pix, color);
     }
 
-    //Statement = LValue = Expr | write Expr | while Expr Block
+    //Statement = LValue = Expr | write Expr | while Expr Block | :Expr
     public Statement statement() throws SyntaxException, LexicalException {
         IToken firstToken = currToken; // LValue or write or while
         Expr expr = null;
@@ -516,8 +535,15 @@ public class Parser implements IParser {
             case RES_while -> {
                 currToken = scanner.next(); // expr
                 expr = expr();
-                Block block = block();
+                Block block = block(); // currToken = }
+                currToken = scanner.next(); // .
                 return new WhileStatement(firstToken, expr, block);
+            }
+            //NEW ASSIGNMENT 4
+            case COLON -> {
+                currToken = scanner.next(); // expr
+                expr = expr();
+                return new ReturnStatement(firstToken, expr);
             }
             default -> { // no statement
                 return null;
