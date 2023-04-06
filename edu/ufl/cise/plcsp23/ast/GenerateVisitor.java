@@ -259,12 +259,15 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitWhileStatement(WhileStatement whileStatement, Object arg) throws PLCException {
-        return null;
+        String whileS = "while ( " + whileStatement.getGuard().visit(this, arg) + ") {" + "\n"
+                + whileStatement.getBlock().visit(this, arg) + "\n" + "}";
+        return whileS;
     }
 
     @Override
     public Object visitWriteStatement(WriteStatement statementWrite, Object arg) throws PLCException {
-        return null;
+        //ConsoleIO.write(statementWrite.getE().visit(this, arg));
+        return statementWrite.getE().visit(this, arg);
     }
 
     @Override
