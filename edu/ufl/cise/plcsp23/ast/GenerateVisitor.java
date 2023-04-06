@@ -143,8 +143,8 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCException {
-       //obj wants String -> String LString = lValue.getIdent().visit (this, arg);
-        return null;
+       String LString = lValue.getIdent().visit (this, arg).toString();
+       return LString;
     }
 
     @Override
@@ -261,7 +261,7 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitWriteStatement(WriteStatement statementWrite, Object arg) throws PLCException {
         //ConsoleIO.write(statementWrite.getE().visit(this, arg));
-        return statementWrite.getE().visit(this, arg);
+        return null;
     }
 
     @Override
