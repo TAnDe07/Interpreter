@@ -89,6 +89,7 @@ public class TypeCheckVisitor implements ASTVisitor {
             }
             else {
                 lValueType = Type.PIXEL;
+                statementAssign.getLv().getPixelSelector().visit(this, arg);
             }
         }
 
@@ -488,6 +489,9 @@ public class TypeCheckVisitor implements ASTVisitor {
         if (expr1 != Type.INT || expr2 != Type.INT) {
             error("Dimension not properly typed");
         }
+
+
+
         return Type.INT; //?????
     }
 
