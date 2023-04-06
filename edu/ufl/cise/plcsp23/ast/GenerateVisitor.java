@@ -4,8 +4,12 @@ import edu.ufl.cise.plcsp23.PLCException;
 
 public class GenerateVisitor implements ASTVisitor {
     @Override
+    //NOT DONE
     public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
-        return null;
+
+        String assignString = visitLValue(statementAssign.lv, arg) + "=";
+       // assignString += "\n" + visitExpr(statementAssign.e, arg) + "\n";
+        return assignString;
     }
 
     @Override
