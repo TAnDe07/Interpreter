@@ -82,11 +82,12 @@ public class GenerateVisitor implements ASTVisitor {
     //Debug
     public Object visitBlock(Block block, Object arg) throws PLCException {
         String blockString = "";
+        //declist
        for (int i = 0; i < block.decList.size(); i++) {
                blockString += visitDeclaration(block.decList.get(i), arg);
                blockString += ";\n";
        }
-
+        //statementlist
         for (int i = 0; i < block.statementList.size(); i++) {
             blockString += block.statementList.get(i).visit(this, arg);
             blockString += ";\n";
@@ -189,7 +190,9 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitRandomExpr(RandomExpr randomExpr, Object arg) throws PLCException {
-        return null;
+        double randD = Math.floor(Math.random() * 256);
+        String randString = Double.toString(randD);
+        return randString;
     }
 
     @Override
@@ -206,6 +209,15 @@ public class GenerateVisitor implements ASTVisitor {
     // assignment 6
     @Override
     public Object visitUnaryExpr(UnaryExpr unaryExpr, Object arg) throws PLCException {
+        String unaryString = "";
+       /*
+        switch (unaryExpr.op) {
+            case BANG -> unaryString = "!";
+            case MINUS -> unaryString = "-";
+            case RES_sin -> unaryString = "sin";
+            case RES_cos -> unaryString = "cos";
+            case RES_atan -> unaryString = "atan";
+        }*/
         return null;
     }
 
