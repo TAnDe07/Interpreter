@@ -28,4 +28,9 @@ public class CompilerComponentFactory {
         //code to instantiate a return an ASTVisitor for type checking
         return new TypeCheckVisitor();
     }
+
+    public static ASTVisitor makeCodeGenerator(String name) {
+        //code to instantiate a return an ASTVisitor for code generation
+        return null; //DK
+    }
 }
