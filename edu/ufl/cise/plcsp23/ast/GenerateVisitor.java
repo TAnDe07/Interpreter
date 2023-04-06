@@ -2,6 +2,8 @@ package edu.ufl.cise.plcsp23.ast;
 
 import edu.ufl.cise.plcsp23.PLCException;
 
+import java.util.Locale;
+
 public class GenerateVisitor implements ASTVisitor {
     @Override
     //NOT DONE
@@ -20,7 +22,7 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     //Debug
     public Object visitBlock(Block block, Object arg) throws PLCException {
-        String blockString = null;
+        String blockString = "";
        for (int i = 0; i < block.decList.size(); i++) {
                blockString += visitDeclaration(block.decList.get(i), arg);
                blockString += "\n";
@@ -73,7 +75,8 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCException {
-        return null;
+        String nameDef1 = nameDef.getType() + " " + nameDef.getIdent().getName();
+        return nameDef1;
     }
 
     @Override
@@ -98,7 +101,23 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCException {
-        return null;
+        String type = program.getType() + "";
+        String program1 = "public class " + program.getIdent().getName() + " {\n\tpublic static " + type.toLowerCase() + " apply(";
+
+        for (int i = 0; i < program.getParamList().size(); i++) {
+            program1 += visitNameDef(program.getParamList().get(i), arg);
+            if (i != program.getParamList().size() - 1) {
+                program1 += ", ";
+            }
+        }
+
+        program1 += ") {\n";
+
+        program1 += program.getBlock().visit(this, arg);
+
+        program1 += "\t}\n}";
+
+        return program1;
     }
 
     @Override
