@@ -2,15 +2,13 @@ package edu.ufl.cise.plcsp23.ast;
 
 import edu.ufl.cise.plcsp23.PLCException;
 
-import java.util.Locale;
-
 public class GenerateVisitor implements ASTVisitor {
     @Override
     //NOT DONE
     public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
 
         String assignString = visitLValue(statementAssign.lv, arg) + "=";
-       // assignString += "\n" + visitExpr(statementAssign.e, arg) + "\n";
+        assignString += statementAssign.getE().visit(this, arg);
         return assignString;
     }
 
@@ -45,7 +43,12 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCException {
-        return null;
+        String decString = "";
+        if (declaration.initializer != null) {
+            decString = declaration.nameDef.type + "=";
+            decString += declaration.getInitializer().visit(this, arg);
+        }
+        return decString;
     }
 
     @Override
