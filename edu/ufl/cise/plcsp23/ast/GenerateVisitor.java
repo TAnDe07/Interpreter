@@ -100,7 +100,13 @@ public class GenerateVisitor implements ASTVisitor {
     }*/
     @Override
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws PLCException {
-        return null;
+        String condition = "(";
+
+        condition += conditionalExpr.getGuard().visit(this, arg) + " ? ";
+        condition += "\"" + conditionalExpr.getTrueCase().visit(this, arg) + "\" : ";
+        condition += "\"" + conditionalExpr.getFalseCase().visit(this, arg) + "\")";
+
+        return condition;
     }
 
     @Override
@@ -115,7 +121,7 @@ public class GenerateVisitor implements ASTVisitor {
                 type = type.toLowerCase();
             }
 
-            decString = type + " = ";
+            decString = type + " " + declaration.getNameDef().getIdent().getName() + " = ";
             decString += declaration.getInitializer().visit(this, arg);
         }
         return decString;
@@ -226,7 +232,7 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws PLCException {
-        String sLitString = stringLitExpr.toString();
+        String sLitString = stringLitExpr.getValue();
         return sLitString;
     }
 
