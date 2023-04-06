@@ -1,6 +1,7 @@
 package edu.ufl.cise.plcsp23.ast;
 
 import edu.ufl.cise.plcsp23.PLCException;
+import edu.ufl.cise.plcsp23.TypeCheckException;
 
 public class GenerateVisitor implements ASTVisitor {
     @Override
@@ -64,7 +65,7 @@ public class GenerateVisitor implements ASTVisitor {
                 kind = "**";
             }
             default -> {
-               // error("compiler error");
+               error("compiler error");
             }
         }
 
@@ -106,7 +107,15 @@ public class GenerateVisitor implements ASTVisitor {
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCException {
         String decString = "";
         if (declaration.initializer != null) {
-            decString = declaration.nameDef.type + "=";
+            String type = declaration.getNameDef().getType() + "";
+            if (type.equals("STRING")) {
+                type = "String";
+            }
+            else {
+                type = type.toLowerCase();
+            }
+
+            decString = type + " = ";
             decString += declaration.getInitializer().visit(this, arg);
         }
         return decString;
@@ -141,13 +150,20 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCException {
         String type = nameDef.getType() + "";
-        String nameDef1 = type.toLowerCase() + " " + nameDef.getIdent().getName();
+        if (type.equals("STRING")) {
+            type = "String";
+        }
+        else {
+            type = type.toLowerCase();
+        }
+
+        String nameDef1 = type + " " + nameDef.getIdent().getName();
         return nameDef1;
     }
 
     @Override
     public Object visitNumLitExpr(NumLitExpr numLitExpr, Object arg) throws PLCException {
-        return null;
+        return numLitExpr.getValue();
     }
 
     // assignment 6
@@ -170,7 +186,14 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCException {
         String type = program.getType() + "";
-        String program1 = "public class " + program.getIdent().getName() + " {\n\tpublic static " + type.toLowerCase() + " apply(";
+        if (type.equals("STRING")) {
+            type = "String";
+        }
+        else {
+            type = type.toLowerCase();
+        }
+
+        String program1 = "public class " + program.getIdent().getName() + " {\n\tpublic static " + type + " apply(";
 
         for (int i = 0; i < program.getParamList().size(); i++) {
             program1 += visitNameDef(program.getParamList().get(i), arg);
@@ -197,7 +220,7 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws PLCException {
-        String return1 = returnStatement.getE().visit(this, arg) + "";
+        String return1 = "return " + returnStatement.getE().visit(this, arg) + "";
         return return1;
     }
 
@@ -241,5 +264,9 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitZExpr(ZExpr zExpr, Object arg) throws PLCException {
         return "255";
+    }
+
+    private void error(String message) throws TypeCheckException {
+        throw new TypeCheckException(message);
     }
 }
