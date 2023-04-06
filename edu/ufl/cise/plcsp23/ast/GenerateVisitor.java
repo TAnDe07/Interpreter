@@ -71,7 +71,8 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCException {
-        String nameDef1 = nameDef.getType() + " " + nameDef.getIdent().getName();
+        String type = nameDef.getType() + "";
+        String nameDef1 = type.toLowerCase() + " " + nameDef.getIdent().getName();
         return nameDef1;
     }
 
