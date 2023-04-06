@@ -25,19 +25,19 @@ public class GenerateVisitor implements ASTVisitor {
         String blockString = "";
        for (int i = 0; i < block.decList.size(); i++) {
                blockString += visitDeclaration(block.decList.get(i), arg);
-               blockString += "\n";
+               blockString += ";\n";
        }
 
         for (int i = 0; i < block.statementList.size(); i++) {
-            blockString += visitStatementList(block.statementList.get(i), arg);
-            blockString += "\n";
+            blockString += block.statementList.get(i).visit(this, arg);
+            blockString += ";\n";
         }
         return blockString;
     }
 
-    public Object visitStatementList(Statement statement, Object arg) throws PLCException {
+    /*public Object visitStatementList(Statement statement, Object arg) throws PLCException {
         return null;
-    }
+    }*/
     @Override
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws PLCException {
         return null;
@@ -60,12 +60,12 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitIdent(Ident ident, Object arg) throws PLCException {
-        return null;
+        return ident.getName();
     }
 
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCException {
-        return null;
+        return identExpr.getName();
     }
 
     @Override
@@ -85,6 +85,7 @@ public class GenerateVisitor implements ASTVisitor {
         return null;
     }
 
+    // assignment 6
     @Override
     public Object visitPixelFuncExpr(PixelFuncExpr pixelFuncExpr, Object arg) throws PLCException {
         return null;
@@ -95,6 +96,7 @@ public class GenerateVisitor implements ASTVisitor {
         return null;
     }
 
+    // assignment 6
     @Override
     public Object visitPredeclaredVarExpr(PredeclaredVarExpr predeclaredVarExpr, Object arg) throws PLCException {
         return null;
@@ -128,7 +130,8 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws PLCException {
-        return null;
+        String return1 = returnStatement.getE().visit(this, arg) + "";
+        return return1;
     }
 
     @Override
@@ -136,11 +139,13 @@ public class GenerateVisitor implements ASTVisitor {
         return null;
     }
 
+    // assignment 6
     @Override
     public Object visitUnaryExpr(UnaryExpr unaryExpr, Object arg) throws PLCException {
         return null;
     }
 
+    // assignment 6
     @Override
     public Object visitUnaryExprPostFix(UnaryExprPostfix unaryExprPostfix, Object arg) throws PLCException {
         return null;
@@ -158,6 +163,6 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitZExpr(ZExpr zExpr, Object arg) throws PLCException {
-        return null;
+        return "255";
     }
 }
