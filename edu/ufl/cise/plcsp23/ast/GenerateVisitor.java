@@ -60,7 +60,8 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitNameDef(NameDef nameDef, Object arg) throws PLCException {
-        return null;
+        String nameDef1 = nameDef.getType() + " " + nameDef.getIdent().getName();
+        return nameDef1;
     }
 
     @Override
@@ -85,7 +86,23 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCException {
-        return null;
+        String program1 = "public class " + program.getIdent().getName() + " {\n\tpublic static " + program.getType() +
+                " apply(";
+
+        for (int i = 0; i < program.getParamList().size(); i++) {
+            program1 += visitNameDef(program.getParamList().get(i), arg);
+            if (i != program.getParamList().size() - 1) {
+                program1 += ", ";
+            }
+        }
+
+        program1 += ") {\n\t\t";
+
+        program1 += program.getBlock().visit(this, arg);
+
+        program1 += "\n}";
+
+        return program1;
     }
 
     @Override
