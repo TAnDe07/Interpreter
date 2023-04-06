@@ -1,6 +1,7 @@
 package edu.ufl.cise.plcsp23.ast;
 
 import edu.ufl.cise.plcsp23.PLCException;
+import edu.ufl.cise.plcsp23.TypeCheckException;
 
 public class GenerateVisitor implements ASTVisitor {
     @Override
@@ -14,7 +15,67 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCException {
-        return null;
+        String binary = "(";
+        String kind = "";
+
+        switch(binaryExpr.getOp()) {
+            case EQ -> { // ==
+                kind = "==";
+            }
+            case PLUS -> { // +
+                kind = "+";
+            }
+            case MINUS -> { // -
+                kind = "-";
+            }
+            case TIMES -> { // *
+                kind = "";
+            }
+            case DIV -> { // /
+                kind = "/";
+            }
+            case MOD -> { // %
+                kind = "%";
+            }
+            case LT -> { // <, <=, >, >=, ||, &&
+                kind = "<";
+            }
+            case LE -> { // <=
+                kind = "<=";
+            }
+            case GT -> { // >
+                kind = ">";
+            }
+            case GE -> { // >=
+                kind = ">=";
+            }
+            case OR -> { // ||
+                kind = "||";
+            }
+            case AND -> { // &&
+                kind = "&&";
+            }
+            case BITAND -> { // &
+                kind = "&";
+            }
+            case BITOR -> { // |
+                kind = "|";
+            }
+            case EXP -> { // **
+                kind = "**";
+            }
+            default -> {
+                error("compiler error");
+            }
+        }
+
+        binary += binaryExpr.getLeft().visit(this, arg);
+        binary += " " + kind + " ";
+        binary += binaryExpr.getRight().visit(this, arg);
+
+        binary += ")";
+
+        return binary;
     }
 
     @Override
@@ -85,7 +146,7 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitNumLitExpr(NumLitExpr numLitExpr, Object arg) throws PLCException {
-        return null;
+        return numLitExpr.getValue();
     }
 
     // assignment 6
@@ -133,7 +194,7 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws PLCException {
-        String return1 = returnStatement.getE().visit(this, arg) + "";
+        String return1 = "return " + returnStatement.getE().visit(this, arg) + "";
         return return1;
     }
 
@@ -167,5 +228,9 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitZExpr(ZExpr zExpr, Object arg) throws PLCException {
         return "255";
+    }
+
+    private void error(String message) throws TypeCheckException {
+        throw new TypeCheckException(message);
     }
 }
