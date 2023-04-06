@@ -2,11 +2,6 @@ package edu.ufl.cise.plcsp23.ast;
 
 import edu.ufl.cise.plcsp23.PLCException;
 
-import edu.ufl.cise.plcsp23.IToken;
-import edu.ufl.cise.plcsp23.PLCException;
-import edu.ufl.cise.plcsp23.Token;
-import edu.ufl.cise.plcsp23.TypeCheckException;
-
 public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
@@ -19,10 +14,24 @@ public class GenerateVisitor implements ASTVisitor {
     }
 
     @Override
+    //Debug
     public Object visitBlock(Block block, Object arg) throws PLCException {
-        return null;
+        String blockString = null;
+       for (int i = 0; i < block.decList.size(); i++) {
+               blockString += visitDeclaration(block.decList.get(i), arg);
+               blockString += "\n";
+       }
+
+        for (int i = 0; i < block.statementList.size(); i++) {
+            blockString += visitStatementList(block.statementList.get(i), arg);
+            blockString += "\n";
+        }
+        return blockString;
     }
 
+    public Object visitStatementList(Statement statement, Object arg) throws PLCException {
+        return null;
+    }
     @Override
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws PLCException {
         return null;
