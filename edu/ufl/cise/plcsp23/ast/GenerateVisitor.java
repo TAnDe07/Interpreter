@@ -4,6 +4,9 @@ import edu.ufl.cise.plcsp23.PLCException;
 import edu.ufl.cise.plcsp23.TypeCheckException;
 
 public class GenerateVisitor implements ASTVisitor {
+
+    boolean write = false;
+
     @Override
     //NOT DONE
     public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
@@ -126,12 +129,12 @@ public class GenerateVisitor implements ASTVisitor {
         }
         return decString;
     }
-
+    // assignment 6
     @Override
     public Object visitDimension(Dimension dimension, Object arg) throws PLCException {
         return null;
     }
-
+    // assignment 6
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCException {
         return null;
@@ -177,7 +180,7 @@ public class GenerateVisitor implements ASTVisitor {
     public Object visitPixelFuncExpr(PixelFuncExpr pixelFuncExpr, Object arg) throws PLCException {
         return null;
     }
-
+    // assignment 6
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCException {
         return null;
@@ -213,6 +216,10 @@ public class GenerateVisitor implements ASTVisitor {
         program1 += program.getBlock().visit(this, arg);
 
         program1 += "\t}\n}";
+
+        if (write) {
+            program1 = "import edu.ufl.cise.plcsp23.runtime.ConsoleIO;\n" + program1;
+        }
 
         return program1;
     }
@@ -266,8 +273,8 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitWriteStatement(WriteStatement statementWrite, Object arg) throws PLCException {
-        //ConsoleIO.write(statementWrite.getE().visit(this, arg));
-        return null;
+        write = true;
+        return "ConsoleIO.write(" + statementWrite.getE().visit(this, arg) + ")";
     }
 
     @Override
