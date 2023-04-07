@@ -1,16 +1,12 @@
 package edu.ufl.cise.plcsp23;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.awt.image.BufferedImage;
-
-import org.junit.jupiter.api.Test;
-
 import edu.ufl.cise.plcsp23.ast.AST;
 import edu.ufl.cise.plcsp23.ast.Program;
-import edu.ufl.cise.plcsp23.runtime.ConsoleIO;
 import edu.ufl.cise.plcsp23.javaCompilerClassLoader.DynamicClassLoader;
 import edu.ufl.cise.plcsp23.javaCompilerClassLoader.DynamicCompiler;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class Assignment5Test_starter {
 		
