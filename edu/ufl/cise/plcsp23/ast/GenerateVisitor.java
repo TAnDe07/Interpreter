@@ -7,6 +7,12 @@ public class GenerateVisitor implements ASTVisitor {
 
     boolean write = false;
 
+    public int evaluate(Expr expr) {
+        int bool = -1;
+
+        return bool;
+    }
+
     @Override
     //NOT DONE
     public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
@@ -20,10 +26,12 @@ public class GenerateVisitor implements ASTVisitor {
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCException {
         String binary = "(";
         String kind = "";
+        boolean bool = false;
 
         switch(binaryExpr.getOp()) {
             case EQ -> { // ==
                 kind = "==";
+                bool = true;
             }
             case PLUS -> { // +
                 kind = "+";
@@ -40,23 +48,29 @@ public class GenerateVisitor implements ASTVisitor {
             case MOD -> { // %
                 kind = "%";
             }
-            case LT -> { // <, <=, >, >=, ||, &&
+            case LT -> { // <
                 kind = "<";
+                bool = true;
             }
             case LE -> { // <=
                 kind = "<=";
+                bool = true;
             }
             case GT -> { // >
                 kind = ">";
+                bool = true;
             }
             case GE -> { // >=
                 kind = ">=";
+                bool = true;
             }
             case OR -> { // ||
                 kind = "||";
+                bool = true;
             }
             case AND -> { // &&
                 kind = "&&";
+                bool = true;
             }
             case BITAND -> { // &
                 kind = "&";
@@ -72,9 +86,15 @@ public class GenerateVisitor implements ASTVisitor {
             }
         }
 
-        binary += binaryExpr.getLeft().visit(this, arg);
-        binary += " " + kind + " ";
-        binary += binaryExpr.getRight().visit(this, arg);
+
+        /*if (bool) {
+            int return1 = evaluate(binaryExpr);
+        }
+        else {*/
+            binary += binaryExpr.getLeft().visit(this, arg);
+            binary += " " + kind + " ";
+            binary += binaryExpr.getRight().visit(this, arg);
+        //}
 
         binary += ")";
 
@@ -105,7 +125,12 @@ public class GenerateVisitor implements ASTVisitor {
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws PLCException {
         String condition = "(";
 
+        if (conditionalExpr.getGuard() instanceof IdentExpr) {
+            condition += "";
+        }
+
         condition += conditionalExpr.getGuard().visit(this, arg) + " ? ";
+
         condition += "\"" + conditionalExpr.getTrueCase().visit(this, arg) + "\" : ";
         condition += "\"" + conditionalExpr.getFalseCase().visit(this, arg) + "\")";
 
@@ -267,14 +292,18 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitWhileStatement(WhileStatement whileStatement, Object arg) throws PLCException {
         String whileS = "while ( " + whileStatement.getGuard().visit(this, arg) + ") {" + "\n"
-                + whileStatement.getBlock().visit(this, arg) + "\n" + "}";
+                + whileStatement.getBlock().visit(this, arg) + "}";
         return whileS;
     }
 
     @Override
     public Object visitWriteStatement(WriteStatement statementWrite, Object arg) throws PLCException {
         write = true;
-        return "ConsoleIO.write(" + statementWrite.getE().visit(this, arg) + ")";
+        String statement = statementWrite.getE().visit(this, arg) + "";
+        if (statementWrite.getE() instanceof StringLitExpr) {
+            statement = "\"" + statement + "\"";
+        }
+        return "ConsoleIO.write(" + statement + ")";
     }
 
     @Override

@@ -232,15 +232,15 @@ class Assignment5Test_starter {
 		int result = (Integer)genCodeAndRun(input,"",params);
 		assertEquals(0,result);
 	}
-	
+	// from discord
 	@Test
-	void cg10() throws Exception{
+	void cg10Updated() throws Exception{
 		String input = """
 				int testWhile(int val){
 				int aa = val.
 				int g = aa.
 				write val.
-				while (!(g == 0)) {
+				while (g == 1) {
 				  int aa = val/2.
 				  write "outer loop:  aa=".
 				  write aa.
@@ -261,5 +261,43 @@ class Assignment5Test_starter {
 		int v = 100;
 		Object[] params = {v};
 		Object result = genCodeAndRun(input,"",params);
+		assertEquals(100,result);
+
+	}
+
+	@Test
+	void exponentiation() throws Exception{
+		String input = """
+				int t(int val){
+				int vv = val.
+				int yy = 3.
+				int zz = 2**3.
+				:zz.
+				}
+				""";
+		int v = 2;
+		Object[] params = {v};
+		int result = (Integer)genCodeAndRun(input,"",params);
+		assertEquals(8,result);
+	}
+
+	@Test
+	void randomAndZ() throws Exception{
+		String input = """
+				int t(int val){
+				int vv = val.
+				int yy = Z.
+				int zz = rand.
+				write zz.
+				:yy.
+				}
+				""";
+		int v = 2;
+		Object[] params = {v};
+		int result = (Integer)genCodeAndRun(input,"",params);
+		//should write
+		// integer from 0 to 255
+		// to OUTPUT
+		assertEquals(255,result);
 	}
 }
