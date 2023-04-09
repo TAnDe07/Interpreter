@@ -12,6 +12,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     int scopeCount = 1;
     Type progType;
+    int duplicateCount = 0;
 
     public static class SymbolTable {
         HashMap<Integer, HashMap<String, NameDef>> entries = new HashMap<>();
@@ -47,14 +48,6 @@ public class TypeCheckVisitor implements ASTVisitor {
 
             return null;
         }
-
-
-
-        /*public void initialized(String name) {
-            HashMap pair = new HashMap<>();
-            pair.put(entries.get(name).get(currScope), true);
-            entries.replace(name, pair);
-        }*/
 
         public void enterScope(int scope) {
             this.currScope.push(scope);
@@ -444,7 +437,6 @@ public class TypeCheckVisitor implements ASTVisitor {
             dim.visit(this, arg);
         }
         // Ident.name has not been previously declared in this scope.
-        // need to edit to include scope??
         NameDef inserted = symbolTable.lookupScope(name, scopeCount);
         if (inserted != null) { // null if name not declared
             //if (inserted.getSecond() == symbolTable.currScope.peek()) {
@@ -456,6 +448,17 @@ public class TypeCheckVisitor implements ASTVisitor {
         if (nameDef.getType() == Type.VOID) {
             error("type cannot be void");
         }
+
+        // rename any variables whose name is already in table
+        NameDef visible = symbolTable.lookupVisible(name, scopeCount);
+
+        if (visible != null) {
+            name += String.valueOf(duplicateCount);
+            nameDef.getIdent().setName(name);
+            duplicateCount++;
+        }
+
+
         // Insert (name, NameDef) into symbol table.
         symbolTable.insert(name, nameDef, symbolTable.currScope.peek());
 
