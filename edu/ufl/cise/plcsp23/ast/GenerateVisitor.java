@@ -6,14 +6,21 @@ import edu.ufl.cise.plcsp23.TypeCheckException;
 public class GenerateVisitor implements ASTVisitor {
 
     boolean write = false;
+    Type program;
 
     @Override
     //NOT DONE
     public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
 
-        String assignString = visitLValue(statementAssign.lv, arg) + "=";
+        String assignString = visitLValue(statementAssign.lv, arg) + " = ";
 
         String assign = statementAssign.getE().visit(this, arg) + "";
+
+        if (statementAssign.getLv().getType() == Type.STRING) {
+            if (statementAssign.getE() instanceof NumLitExpr) {
+                assign = "\"" + assign + "\"";
+            }
+        }
 
         assignString += assign;
 
@@ -192,7 +199,16 @@ public class GenerateVisitor implements ASTVisitor {
 
         if (declaration.initializer != null) {
             decString += " = ";
-            decString += declaration.getInitializer().visit(this, arg);
+
+            String initialize = declaration.getInitializer().visit(this, arg) + "";
+
+            if (type.equals("String")) {
+                if (declaration.getInitializer() instanceof NumLitExpr) {
+                    initialize = "\"" + initialize + "\"";
+                }
+            }
+
+            decString += initialize;
         }
         return decString;
     }
@@ -261,6 +277,7 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCException {
+        this.program = program.getType();
         String type = program.getType() + "";
         if (type.equals("STRING")) {
             type = "String";
@@ -301,7 +318,13 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitReturnStatement(ReturnStatement returnStatement, Object arg) throws PLCException {
-        String return1 = "return " + returnStatement.getE().visit(this, arg) + "";
+        String expr = "" + returnStatement.getE().visit(this, arg);
+
+        if (returnStatement.getE() instanceof NumLitExpr && program == Type.STRING) {
+            expr = "\"" + expr + "\"";
+        }
+
+        String return1 = "return " + expr;
         return return1;
     }
 

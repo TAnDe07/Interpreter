@@ -18,6 +18,7 @@ public class Ident extends AST {
 	NameDef def;
 	String name;
 	boolean nameSet = false;
+	Type type;
 
 	public Ident(IToken firstToken) {
 		super(firstToken);
@@ -39,6 +40,10 @@ public class Ident extends AST {
 		this.name = name;
 		nameSet = true;
 	}
+
+	public Type getType() {return type;}
+
+	public void setType(Type type) {this.type = type;}
 
 	public NameDef getDef() {
 		return def;

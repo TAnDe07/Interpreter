@@ -86,6 +86,8 @@ public class TypeCheckVisitor implements ASTVisitor {
             }
         }
 
+        statementAssign.getLv().setType(lValueType);
+
         // LValue.type is assignment compatible with Expr.type
         switch (lValueType) {
             case IMAGE -> {
@@ -318,6 +320,8 @@ public class TypeCheckVisitor implements ASTVisitor {
             }
         }
 
+        declaration.getNameDef().getIdent().setType(nameDef.getType());
+
         return declaration;
     }
 
@@ -362,7 +366,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitIdent(Ident ident, Object arg) throws PLCException {
-        Type name = ident.def.type;
+        Type name = ident.getType();
         Type result = null;
         if (name == Type.IMAGE) {
             result = Type.IMAGE;
@@ -379,6 +383,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         else {
             error("incorrect ident");
         }
+
         return result;
     }
 
@@ -415,10 +420,6 @@ public class TypeCheckVisitor implements ASTVisitor {
         if (pair == null) { // null if name not declared and out of scope
             error("ident not declared");
         }
-        /* Ident is visible in this scope
-        if (symbolTable.entries.get(name).get(scopeCount) != null) {
-            error("ident expression is out of scope");
-        }*/
 
         return lValue;
     }
