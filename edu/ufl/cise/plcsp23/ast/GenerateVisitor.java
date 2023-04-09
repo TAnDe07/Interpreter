@@ -7,18 +7,13 @@ public class GenerateVisitor implements ASTVisitor {
 
     boolean write = false;
 
-    public int evaluate(Expr expr) {
-        int bool = -1;
-
-        return bool;
-    }
-
     @Override
     //NOT DONE
     public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
 
         String assignString = visitLValue(statementAssign.lv, arg) + "=";
         assignString += statementAssign.getE().visit(this, arg);
+
         return assignString;
     }
 
@@ -86,17 +81,15 @@ public class GenerateVisitor implements ASTVisitor {
             }
         }
 
-
-        /*if (bool) {
-            int return1 = evaluate(binaryExpr);
-        }
-        else {*/
-            binary += binaryExpr.getLeft().visit(this, arg);
-            binary += " " + kind + " ";
-            binary += binaryExpr.getRight().visit(this, arg);
-        //}
+        binary += binaryExpr.getLeft().visit(this, arg);
+        binary += " " + kind + " ";
+        binary += binaryExpr.getRight().visit(this, arg);
 
         binary += ")";
+
+        if (bool) {
+            binary += " ? 1 : 0";
+        }
 
         return binary;
     }
@@ -125,11 +118,15 @@ public class GenerateVisitor implements ASTVisitor {
     public Object visitConditionalExpr(ConditionalExpr conditionalExpr, Object arg) throws PLCException {
         String condition = "(";
 
-        if (conditionalExpr.getGuard() instanceof IdentExpr) {
-            condition += "";
+        String guard = conditionalExpr.getGuard().visit(this, arg) + "";
+
+        if (conditionalExpr.getGuard() instanceof BinaryExpr) {
+            if (guard.charAt(guard.length() - 1) != ')') {
+                guard = guard.substring(0, guard.length() - 8);
+            }
         }
 
-        condition += conditionalExpr.getGuard().visit(this, arg) + " ? ";
+        condition += guard + " ? ";
 
         condition += "\"" + conditionalExpr.getTrueCase().visit(this, arg) + "\" : ";
         condition += "\"" + conditionalExpr.getFalseCase().visit(this, arg) + "\")";
@@ -291,7 +288,7 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitWhileStatement(WhileStatement whileStatement, Object arg) throws PLCException {
-        String whileS = "while ( " + whileStatement.getGuard().visit(this, arg) + ") {" + "\n"
+        String whileS = "while ((" + whileStatement.getGuard().visit(this, arg) + ") == 1) {" + "\n"
                 + whileStatement.getBlock().visit(this, arg) + "}";
         return whileS;
     }
