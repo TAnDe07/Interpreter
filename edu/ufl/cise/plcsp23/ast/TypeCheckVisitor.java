@@ -261,7 +261,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         // ConditionalExpr.type ← Expr1.type
         conditionalExpr.setType(conditionalExpr.getTrueCase().getType());
 
-        return conditionalExpr;
+        return conditionalExpr.getType();
     }
 
     @Override

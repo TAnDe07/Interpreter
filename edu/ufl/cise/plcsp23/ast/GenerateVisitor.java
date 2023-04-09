@@ -25,6 +25,7 @@ public class GenerateVisitor implements ASTVisitor {
         String binary = "(";
         String kind = "";
         boolean bool = false;
+        boolean logic = false;
 
         switch(binaryExpr.getOp()) {
             case EQ -> { // ==
@@ -38,7 +39,7 @@ public class GenerateVisitor implements ASTVisitor {
                 kind = "-";
             }
             case TIMES -> { // *
-                kind = "";
+                kind = "*";
             }
             case DIV -> { // /
                 kind = "/";
@@ -65,10 +66,12 @@ public class GenerateVisitor implements ASTVisitor {
             case OR -> { // ||
                 kind = "||";
                 bool = true;
+                logic = true;
             }
             case AND -> { // &&
                 kind = "&&";
                 bool = true;
+                logic = true;
             }
             case BITAND -> { // &
                 kind = "&";
@@ -84,9 +87,27 @@ public class GenerateVisitor implements ASTVisitor {
             }
         }
 
-        binary += binaryExpr.getLeft().visit(this, arg);
-        binary += " " + kind + " ";
-        binary += binaryExpr.getRight().visit(this, arg);
+        String left = binaryExpr.getLeft().visit(this, arg) + "";
+        String right = binaryExpr.getRight().visit(this, arg) + "";
+
+        if (kind.equals("**")) {
+            binary += "(int) java.lang.Math.pow(" + left + ", " + right + ")";
+        }
+        else {
+
+            binary += left;
+
+            if (logic) {
+                binary += " != 0";
+            }
+
+            binary += " " + kind + " ";
+            binary += right;
+
+            if (logic) {
+                binary += "!= 0 ";
+            }
+        }
 
         binary += ")";
 
@@ -159,16 +180,18 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCException {
         String decString = "";
-        if (declaration.initializer != null) {
-            String type = declaration.getNameDef().getType() + "";
-            if (type.equals("STRING")) {
-                type = "String";
-            }
-            else {
-                type = type.toLowerCase();
-            }
+        String type = declaration.getNameDef().getType() + "";
+        if (type.equals("STRING")) {
+            type = "String";
+        }
+        else {
+            type = type.toLowerCase();
+        }
 
-            decString = type + " " + declaration.getNameDef().getIdent().getName() + " = ";
+        decString = type + " " + declaration.getNameDef().getIdent().getName();
+
+        if (declaration.initializer != null) {
+            decString += " = ";
             decString += declaration.getInitializer().visit(this, arg);
         }
         return decString;
@@ -321,9 +344,6 @@ public class GenerateVisitor implements ASTVisitor {
     public Object visitWriteStatement(WriteStatement statementWrite, Object arg) throws PLCException {
         write = true;
         String statement = statementWrite.getE().visit(this, arg) + "";
-        if (statementWrite.getE() instanceof StringLitExpr) {
-            statement = "\"" + statement + "\"";
-        }
         return "ConsoleIO.write(" + statement + ")";
     }
 
