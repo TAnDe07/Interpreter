@@ -310,10 +310,8 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitRandomExpr(RandomExpr randomExpr, Object arg) throws PLCException {
-        double randD = Math.floor(Math.random() * 256);
-        String randString = Double.toString(randD);
-        randString = randString.substring(0, randString.length() - 3);
-        return randString;
+        String random = "(int) Math.floor(Math.random() * 256)";
+        return random;
     }
 
     @Override
