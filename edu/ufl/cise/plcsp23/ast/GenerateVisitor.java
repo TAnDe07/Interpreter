@@ -126,10 +126,31 @@ public class GenerateVisitor implements ASTVisitor {
             }
         }
 
+        if (conditionalExpr.getGuard() instanceof IdentExpr) {
+            guard += "!= 0)";
+            guard = "(" + guard;
+        }
+
         condition += guard + " ? ";
 
-        condition += "\"" + conditionalExpr.getTrueCase().visit(this, arg) + "\" : ";
-        condition += "\"" + conditionalExpr.getFalseCase().visit(this, arg) + "\")";
+        String trueCase = conditionalExpr.getTrueCase().visit(this, arg) + "";
+        String falseCase = "" + conditionalExpr.getFalseCase().visit(this, arg);
+
+        if (conditionalExpr.getTrueCase() instanceof StringLitExpr) {
+            trueCase = "\"" + trueCase + "\"";
+        }
+        else {
+            trueCase = "(" + trueCase + ")";
+        }
+
+        if (conditionalExpr.getFalseCase() instanceof StringLitExpr) {
+            falseCase = "\"" + falseCase + "\"";
+        }
+        else {
+            falseCase = "(" + falseCase + ")";
+        }
+
+        condition += trueCase + " : " + falseCase + ")";
 
         return condition;
     }
