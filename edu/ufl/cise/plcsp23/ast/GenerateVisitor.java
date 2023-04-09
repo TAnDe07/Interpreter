@@ -6,6 +6,7 @@ import edu.ufl.cise.plcsp23.TypeCheckException;
 public class GenerateVisitor implements ASTVisitor {
 
     boolean write = false;
+    boolean math = false;
     Type program;
 
     @Override
@@ -88,6 +89,7 @@ public class GenerateVisitor implements ASTVisitor {
             }
             case EXP -> { // **
                 kind = "**";
+                math = true;
             }
             default -> {
                error("compiler error");
@@ -98,7 +100,7 @@ public class GenerateVisitor implements ASTVisitor {
         String right = binaryExpr.getRight().visit(this, arg) + "";
 
         if (kind.equals("**")) {
-            binary += "(int) java.lang.Math.pow(" + left + ", " + right + ")";
+            binary += "(int) Math.pow(" + left + ", " + right + ")";
         }
         else {
 
@@ -304,12 +306,16 @@ public class GenerateVisitor implements ASTVisitor {
         if (write) {
             program1 = "import edu.ufl.cise.plcsp23.runtime.ConsoleIO;\n" + program1;
         }
+        if (math) {
+            program1 = "import java.lang.Math; \n" + program1;
+        }
 
         return program1;
     }
 
     @Override
     public Object visitRandomExpr(RandomExpr randomExpr, Object arg) throws PLCException {
+        math = true;
         String random = "(int) Math.floor(Math.random() * 256)";
         return random;
     }
