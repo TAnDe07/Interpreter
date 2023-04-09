@@ -12,7 +12,10 @@ public class GenerateVisitor implements ASTVisitor {
     public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
 
         String assignString = visitLValue(statementAssign.lv, arg) + "=";
-        assignString += statementAssign.getE().visit(this, arg);
+
+        String assign = statementAssign.getE().visit(this, arg) + "";
+
+        assignString += assign;
 
         return assignString;
     }
@@ -137,14 +140,12 @@ public class GenerateVisitor implements ASTVisitor {
         String falseCase = "" + conditionalExpr.getFalseCase().visit(this, arg);
 
         if (conditionalExpr.getTrueCase() instanceof StringLitExpr) {
-            trueCase = "\"" + trueCase + "\"";
         }
         else {
             trueCase = "(" + trueCase + ")";
         }
 
         if (conditionalExpr.getFalseCase() instanceof StringLitExpr) {
-            falseCase = "\"" + falseCase + "\"";
         }
         else {
             falseCase = "(" + falseCase + ")";
@@ -271,6 +272,7 @@ public class GenerateVisitor implements ASTVisitor {
     public Object visitRandomExpr(RandomExpr randomExpr, Object arg) throws PLCException {
         double randD = Math.floor(Math.random() * 256);
         String randString = Double.toString(randD);
+        randString = randString.substring(0, randString.length() - 3);
         return randString;
     }
 
@@ -283,6 +285,7 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitStringLitExpr(StringLitExpr stringLitExpr, Object arg) throws PLCException {
         String sLitString = stringLitExpr.getValue();
+        sLitString = "\"" + sLitString + "\"";
         return sLitString;
     }
 
