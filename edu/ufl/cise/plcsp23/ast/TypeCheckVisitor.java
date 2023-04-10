@@ -12,7 +12,6 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     int scopeCount = 1;
     Type progType;
-    int duplicateCount = 0;
 
     public static class SymbolTable {
         HashMap<Integer, HashMap<String, NameDef>> entries = new HashMap<>();
@@ -450,15 +449,7 @@ public class TypeCheckVisitor implements ASTVisitor {
             error("type cannot be void");
         }
 
-        // rename any variables whose name is already in table
-        NameDef visible = symbolTable.lookupVisible(name, scopeCount);
-
-        if (visible != null) {
-            name += String.valueOf(duplicateCount);
-            nameDef.getIdent().setName(name);
-            duplicateCount++;
-        }
-
+        //name += String.valueOf(scopeCount);
 
         // Insert (name, NameDef) into symbol table.
         symbolTable.insert(name, nameDef, symbolTable.currScope.peek());
@@ -687,7 +678,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
         // leaveScope
         symbolTable.leaveScope();
-        scopeCount--;
+        //scopeCount--;
 
         return whileStatement;
     }

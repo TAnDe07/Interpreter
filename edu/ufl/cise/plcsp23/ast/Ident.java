@@ -16,9 +16,8 @@ import edu.ufl.cise.plcsp23.PLCException;
 public class Ident extends AST {
 	
 	NameDef def;
-	String name;
-	boolean nameSet = false;
 	Type type;
+	String tempName = "";
 
 	public Ident(IToken firstToken) {
 		super(firstToken);
@@ -30,20 +29,18 @@ public class Ident extends AST {
 	}
 	
 	public String getName() {
-		if (!nameSet) {
-			name = firstToken.getTokenString();
-		}
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-		nameSet = true;
+		return firstToken.getTokenString();
 	}
 
 	public Type getType() {return type;}
 
 	public void setType(Type type) {this.type = type;}
+
+	public String getTempName() {return tempName;}
+
+	public void setTempName(String name) {
+		tempName = name;
+	}
 
 	public NameDef getDef() {
 		return def;

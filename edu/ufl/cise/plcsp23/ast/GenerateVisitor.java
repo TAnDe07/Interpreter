@@ -3,11 +3,21 @@ package edu.ufl.cise.plcsp23.ast;
 import edu.ufl.cise.plcsp23.PLCException;
 import edu.ufl.cise.plcsp23.TypeCheckException;
 
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
+
 public class GenerateVisitor implements ASTVisitor {
 
     boolean write = false;
     boolean math = false;
     Type program;
+    boolean progName;
+
+    HashMap<String, Vector<Integer>> scopes = new HashMap<>();
+
+    int scope = 0;
 
     @Override
     //NOT DONE
@@ -197,7 +207,19 @@ public class GenerateVisitor implements ASTVisitor {
             type = type.toLowerCase();
         }
 
-        decString = type + " " + declaration.getNameDef().getIdent().getName();
+        Vector<Integer> list = new Vector<>();
+        list.add(1);
+
+        String name = declaration.getNameDef().getIdent().getName();
+
+        if (!scopes.containsKey(name)) {
+            scopes.put(name, list);
+        }
+        else {
+            scopes.get(name).add(scope);
+        }
+
+        decString = type + " " + declaration.getNameDef().getIdent().visit(this, arg);
 
         if (declaration.initializer != null) {
             decString += " = ";
@@ -212,6 +234,7 @@ public class GenerateVisitor implements ASTVisitor {
 
             decString += initialize;
         }
+
         return decString;
     }
     // assignment 6
@@ -227,17 +250,33 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitIdent(Ident ident, Object arg) throws PLCException {
-        return ident.getName();
+        String name = ident.getName();
+        if (!progName && scope > 1) {
+            if (scopes.containsKey(ident.getName())) {
+                if (scopes.get(ident.getName()).size() > 1) {
+                    name += scopes.get(ident.getName()).get(scopes.get(ident.getName()).size() - 1);
+                }
+            }
+        }
+        return name;
     }
 
     @Override
     public Object visitIdentExpr(IdentExpr identExpr, Object arg) throws PLCException {
-        return identExpr.getName();
+        String name = identExpr.getName();
+        if (!progName && scope > 1) {
+            if (scopes.containsKey(identExpr.getName())) {
+                if (scopes.get(identExpr.getName()).size() > 1) {
+                    name += scopes.get(identExpr.getName()).get(scopes.get(identExpr.getName()).size() - 1);
+                }
+            }
+        }
+        return name;
     }
 
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCException {
-       String LString = lValue.getIdent().visit (this, arg).toString();
+       String LString = lValue.getIdent().visit(this, arg).toString();
        return LString;
     }
 
@@ -251,7 +290,7 @@ public class GenerateVisitor implements ASTVisitor {
             type = type.toLowerCase();
         }
 
-        String nameDef1 = type + " " + nameDef.getIdent().getName();
+        String nameDef1 = type + " " + nameDef.getIdent().visit(this, arg);
         return nameDef1;
     }
 
@@ -279,6 +318,10 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitProgram(Program program, Object arg) throws PLCException {
+        scope++;
+
+        progName = true;
+
         this.program = program.getType();
         String type = program.getType() + "";
         if (type.equals("STRING")) {
@@ -288,10 +331,21 @@ public class GenerateVisitor implements ASTVisitor {
             type = type.toLowerCase();
         }
 
-        String program1 = "public class " + program.getIdent().getName() + " {\n\tpublic static " + type + " apply(";
+        String program1 = "public class " + program.getIdent().visit(this, arg) + " {\n\tpublic static " + type + " apply(";
+
+        progName = false;
 
         for (int i = 0; i < program.getParamList().size(); i++) {
             program1 += visitNameDef(program.getParamList().get(i), arg);
+
+            Vector<Integer> list = new Vector<>();
+            list.add(1);
+
+            String name = program.getParamList().get(i).getIdent().getName();
+
+            scopes.put(name, list);
+
+
             if (i != program.getParamList().size() - 1) {
                 program1 += ", ";
             }
@@ -309,6 +363,8 @@ public class GenerateVisitor implements ASTVisitor {
         if (math) {
             program1 = "import java.lang.Math; \n" + program1;
         }
+
+        scope--;
 
         return program1;
     }
@@ -362,8 +418,21 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitWhileStatement(WhileStatement whileStatement, Object arg) throws PLCException {
-        String whileS = "while ((" + whileStatement.getGuard().visit(this, arg) + ") == 1) {" + "\n"
-                + whileStatement.getBlock().visit(this, arg) + "}";
+
+        String whileS = "while ((" + whileStatement.getGuard().visit(this, arg);
+
+        scope++;
+
+        whileS += ") == 1) {" + "\n" + whileStatement.getBlock().visit(this, arg) + "}";
+
+        Integer i2 = Integer.valueOf(scope);
+
+        for (Map.Entry<String, Vector<Integer>> i : scopes.entrySet()) {
+            i.getValue().remove(i2);
+        }
+
+        scope--;
+
         return whileS;
     }
 

@@ -261,7 +261,7 @@ class Assignment5Test_starter {
 
 	}
 
-	/*@Test
+	@Test
 	void cg11() throws Exception{
 		String input = """
 				int testWhile(int val){
@@ -291,7 +291,7 @@ class Assignment5Test_starter {
 		int result = (int) genCodeAndRun(input,"",params);
 		assertEquals(v, (Integer)result);
 
-	}*/
+	}
 
 
 	@Test
