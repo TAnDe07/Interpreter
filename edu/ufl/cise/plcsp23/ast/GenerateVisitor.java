@@ -177,9 +177,11 @@ public class GenerateVisitor implements ASTVisitor {
             IToken.Kind op = binary.getOp();
             if ((op == IToken.Kind.EQ) || (op == IToken.Kind.LT) || (op == IToken.Kind.LE) || (op == IToken.Kind.GT)
                                     || (op == IToken.Kind.GE) || (op == IToken.Kind.OR) || (op == IToken.Kind.AND)) {
+
+                // removes conversion to integer, leaving boolean
                 guard = guard.substring(1, guard.length() - 9);
             }
-            if (op == IToken.Kind.EXP) {
+            else {
                 guard += "!= 0)";
                 guard = "(" + guard;
             }
@@ -191,6 +193,11 @@ public class GenerateVisitor implements ASTVisitor {
         }
 
         if (conditionalExpr.getGuard() instanceof NumLitExpr) {
+            guard += "!= 0)";
+            guard = "(" + guard;
+        }
+
+        if (conditionalExpr.getGuard() instanceof RandomExpr) {
             guard += "!= 0)";
             guard = "(" + guard;
         }
