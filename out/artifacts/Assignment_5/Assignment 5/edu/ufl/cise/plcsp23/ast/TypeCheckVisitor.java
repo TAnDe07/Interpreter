@@ -48,14 +48,6 @@ public class TypeCheckVisitor implements ASTVisitor {
             return null;
         }
 
-
-
-        /*public void initialized(String name) {
-            HashMap pair = new HashMap<>();
-            pair.put(entries.get(name).get(currScope), true);
-            entries.replace(name, pair);
-        }*/
-
         public void enterScope(int scope) {
             this.currScope.push(scope);
             HashMap<String, NameDef> pair = new HashMap<>();
@@ -81,8 +73,22 @@ public class TypeCheckVisitor implements ASTVisitor {
         Expr e = statementAssign.getE();
         Type eType = e.type;
         String name = statementAssign.getLv().getIdent().getName();
+
+        Type lValueType = symbolTable.lookupVisible(name, scopeCount).type;;
+        if (statementAssign.getLv().getPixelSelector() != null) {
+            if (lValueType == Type.PIXEL) {
+                error("type pixel cannot have pixel selector");
+            }
+            else {
+                lValueType = Type.PIXEL;
+                statementAssign.getLv().getPixelSelector().visit(this, arg);
+            }
+        }
+
+        statementAssign.getLv().setType(lValueType);
+
         // LValue.type is assignment compatible with Expr.type
-        switch (symbolTable.lookupVisible(name, scopeCount).type) {
+        switch (lValueType) {
             case IMAGE -> {
                 if (eType == Type.INT || eType == Type.VOID) {
                     error("invalid expr type for image LValue");
@@ -256,7 +262,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         // ConditionalExpr.type ← Expr1.type
         conditionalExpr.setType(conditionalExpr.getTrueCase().getType());
 
-        return conditionalExpr;
+        return conditionalExpr.getType();
     }
 
     @Override
@@ -313,6 +319,8 @@ public class TypeCheckVisitor implements ASTVisitor {
             }
         }
 
+        declaration.getNameDef().getIdent().setType(nameDef.getType());
+
         return declaration;
     }
 
@@ -357,7 +365,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
     @Override
     public Object visitIdent(Ident ident, Object arg) throws PLCException {
-        Type name = ident.def.type;
+        Type name = ident.getType();
         Type result = null;
         if (name == Type.IMAGE) {
             result = Type.IMAGE;
@@ -374,6 +382,7 @@ public class TypeCheckVisitor implements ASTVisitor {
         else {
             error("incorrect ident");
         }
+
         return result;
     }
 
@@ -410,10 +419,6 @@ public class TypeCheckVisitor implements ASTVisitor {
         if (pair == null) { // null if name not declared and out of scope
             error("ident not declared");
         }
-        /* Ident is visible in this scope
-        if (symbolTable.entries.get(name).get(scopeCount) != null) {
-            error("ident expression is out of scope");
-        }*/
 
         return lValue;
     }
@@ -432,7 +437,6 @@ public class TypeCheckVisitor implements ASTVisitor {
             dim.visit(this, arg);
         }
         // Ident.name has not been previously declared in this scope.
-        // need to edit to include scope??
         NameDef inserted = symbolTable.lookupScope(name, scopeCount);
         if (inserted != null) { // null if name not declared
             //if (inserted.getSecond() == symbolTable.currScope.peek()) {
@@ -444,6 +448,9 @@ public class TypeCheckVisitor implements ASTVisitor {
         if (nameDef.getType() == Type.VOID) {
             error("type cannot be void");
         }
+
+        //name += String.valueOf(scopeCount);
+
         // Insert (name, NameDef) into symbol table.
         symbolTable.insert(name, nameDef, symbolTable.currScope.peek());
 
@@ -477,6 +484,9 @@ public class TypeCheckVisitor implements ASTVisitor {
         if (expr1 != Type.INT || expr2 != Type.INT) {
             error("Dimension not properly typed");
         }
+
+
+
         return Type.INT; //?????
     }
 
@@ -668,7 +678,7 @@ public class TypeCheckVisitor implements ASTVisitor {
 
         // leaveScope
         symbolTable.leaveScope();
-        scopeCount--;
+        //scopeCount--;
 
         return whileStatement;
     }

@@ -92,6 +92,9 @@ public class Parser implements IParser {
                     error("dot cannot start any grammar");
                 }
             }
+            else {
+                error("no dot after declaration");
+            }
         }
 
         List<Statement> statList = new ArrayList<>();
@@ -112,6 +115,9 @@ public class Parser implements IParser {
                         currToken.getKind() == Token.Kind.RES_void) {
                     error("declaration after statements begin");
                 }
+            }
+            else {
+                error("no dot after statement");
             }
         }
         if (currToken.getKind() != IToken.Kind.RCURLY) {
@@ -523,7 +529,10 @@ public class Parser implements IParser {
         switch (currToken.getKind()) {
             case IDENT -> {
                 lValue = lValue();
-                currToken = scanner.next(); // expr
+                currToken = scanner.next(); // =
+                if (currToken.getKind() == IToken.Kind.ASSIGN) {
+                    currToken = scanner.next(); // expr
+                }
                 expr = expr();
                 return new AssignmentStatement(firstToken, lValue, expr);
             }

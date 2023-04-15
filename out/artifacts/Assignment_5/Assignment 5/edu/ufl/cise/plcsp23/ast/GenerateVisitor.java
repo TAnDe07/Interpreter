@@ -1,6 +1,5 @@
 package edu.ufl.cise.plcsp23.ast;
 
-import edu.ufl.cise.plcsp23.IToken;
 import edu.ufl.cise.plcsp23.PLCException;
 import edu.ufl.cise.plcsp23.TypeCheckException;
 
@@ -41,7 +40,7 @@ public class GenerateVisitor implements ASTVisitor {
 
     @Override
     public Object visitBinaryExpr(BinaryExpr binaryExpr, Object arg) throws PLCException {
-        String binary = "((";
+        String binary = "(";
         String kind = "";
         boolean bool = false;
         boolean logic = false;
@@ -115,21 +114,18 @@ public class GenerateVisitor implements ASTVisitor {
         }
         else {
 
-            if (logic) {
-                left = "(" + left + " != 0)";
-                right = "(" + right + " != 0)";
-            }
-
             binary += left;
-            binary += " " + kind + " " + right;
 
-            /*if (logic) {
+            if (logic) {
                 binary += " != 0";
             }
 
+            binary += " " + kind + " ";
+            binary += right;
+
             if (logic) {
                 binary += "!= 0 ";
-            }*/
+            }
         }
 
         binary += ")";
@@ -137,8 +133,6 @@ public class GenerateVisitor implements ASTVisitor {
         if (bool) {
             binary += " ? 1 : 0";
         }
-
-        binary += ")";
 
         return binary;
     }
@@ -170,32 +164,12 @@ public class GenerateVisitor implements ASTVisitor {
         String guard = conditionalExpr.getGuard().visit(this, arg) + "";
 
         if (conditionalExpr.getGuard() instanceof BinaryExpr) {
-            /*if (guard.charAt(guard.length() - 1) != ')') {
+            if (guard.charAt(guard.length() - 1) != ')') {
                 guard = guard.substring(0, guard.length() - 8);
-            }*/
-            BinaryExpr binary = (BinaryExpr) conditionalExpr.getGuard();
-            IToken.Kind op = binary.getOp();
-            if ((op == IToken.Kind.EQ) || (op == IToken.Kind.LT) || (op == IToken.Kind.LE) || (op == IToken.Kind.GT)
-                                    || (op == IToken.Kind.GE) || (op == IToken.Kind.OR) || (op == IToken.Kind.AND)) {
-                guard = guard.substring(1, guard.length() - 9);
-            }
-            if (op == IToken.Kind.EXP) {
-                guard += "!= 0)";
-                guard = "(" + guard;
             }
         }
 
         if (conditionalExpr.getGuard() instanceof IdentExpr) {
-            guard += "!= 0)";
-            guard = "(" + guard;
-        }
-
-        if (conditionalExpr.getGuard() instanceof NumLitExpr) {
-            guard += "!= 0)";
-            guard = "(" + guard;
-        }
-
-        if (conditionalExpr.getGuard() instanceof ZExpr) {
             guard += "!= 0)";
             guard = "(" + guard;
         }
@@ -255,11 +229,6 @@ public class GenerateVisitor implements ASTVisitor {
             if (type.equals("String")) {
                 if (declaration.getInitializer() instanceof NumLitExpr) {
                     initialize = "\"" + initialize + "\"";
-                }
-                if (declaration.getInitializer() instanceof IdentExpr) {
-                    if (declaration.getInitializer().getType() == Type.INT) {
-                        initialize = "String.valueOf(" + initialize + ")";
-                    }
                 }
             }
 
@@ -415,10 +384,6 @@ public class GenerateVisitor implements ASTVisitor {
             expr = "\"" + expr + "\"";
         }
 
-        if (returnStatement.getE() instanceof IdentExpr && program == Type.STRING && returnStatement.getE().getType() == Type.INT) {
-            expr = "String.valueOf(" + expr + ")";
-        }
-
         String return1 = "return " + expr;
         return return1;
     }
@@ -458,7 +423,7 @@ public class GenerateVisitor implements ASTVisitor {
 
         scope++;
 
-        whileS += ") != 0) {" + "\n" + whileStatement.getBlock().visit(this, arg) + "}";
+        whileS += ") == 1) {" + "\n" + whileStatement.getBlock().visit(this, arg) + "}";
 
         Integer i2 = Integer.valueOf(scope);
 
