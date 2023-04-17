@@ -233,11 +233,69 @@ public class GenerateVisitor implements ASTVisitor {
     public Object visitDeclaration(Declaration declaration, Object arg) throws PLCException {
         String decString = "";
         String type = declaration.getNameDef().getType() + "";
+        String initializer = "";
+        String initialize = "";
+        String oldType = "";
+        String end = "";
         if (type.equals("STRING")) {
             type = "String";
         }
         else {
             type = type.toLowerCase();
+        }
+
+        // NameDef is a pixel -> Java type int
+        // rhs is pixel, use PixelOps.pack (cg11c)
+        if (type.equals("pixel")) {
+            oldType = "pixel";
+            type = "int";
+        }
+        // NameDef is an image -> Java type BufferedImage
+        if (type.equals("image")) {
+            type = "BufferedImage";
+            // If NameDef.dimension == null -> must be an initializer from which the size can be determined
+            if (declaration.getNameDef().getDimension() == null) {
+                initializer = declaration.getInitializer().getType() + "";
+                // string initializer -> use FileURLIO.readImage (cg20)
+                if (initializer.equals("STRING")) {
+                    initializer = "FileURLIO.readImage(";
+                }
+                // image initializer -> use ImageOps.cloneImage (cg11)
+                else {
+                    initializer = "ImageOps.cloneImage(";
+                }
+            }
+            // If NameDef.dimension != null, an image of this size is created
+            else {
+                // If no initializer -> use ImageOps.makeImage (cg10a)
+                if (declaration.getInitializer() == null) {
+                    initializer = " = ImageOps.makeImage(";
+                    Expr width = declaration.getNameDef().getDimension().getWidth();
+                    String width1 = width.visit(this, arg) + "";
+                    Expr height = declaration.getNameDef().getDimension().getHeight();
+                    String height1 = height.visit(this, arg) + "";
+
+                    initializer += width1 + ", " + height1;
+                }
+                // If string initializer -> use readImage overload with size parameters (cg11b)
+                else if (declaration.getInitializer().getType() == Type.STRING) {
+                    initializer = "FileURLIO.readImage(";
+                    Expr width = declaration.getNameDef().getDimension().getWidth();
+                    String width1 = width.visit(this, arg) + "";
+                    Expr height = declaration.getNameDef().getDimension().getHeight();
+                    String height1 = height.visit(this, arg) + "";
+                    end = ", " + width1 + ", " + height1;
+                }
+                // if image initializer -> use copyAndResize (cg11a)
+                else if (declaration.getInitializer().getType() == Type.IMAGE) {
+                    initializer = "ImageOps.copyAndResize(";
+                    Expr width = declaration.getNameDef().getDimension().getWidth();
+                    String width1 = width.visit(this, arg) + "";
+                    Expr height = declaration.getNameDef().getDimension().getHeight();
+                    String height1 = height.visit(this, arg) + "";
+                    end = ", " + width1 + ", " + height1;
+                }
+            }
         }
 
         Vector<Integer> list = new Vector<>();
@@ -251,13 +309,14 @@ public class GenerateVisitor implements ASTVisitor {
         else {
             scopes.get(name).add(scope);
         }
-
+        // visit nameDef
         decString = type + " " + declaration.getNameDef().getIdent().visit(this, arg);
 
+        // if there is an Expr, visit Expr
         if (declaration.initializer != null) {
             decString += " = ";
 
-            String initialize = declaration.getInitializer().visit(this, arg) + "";
+            initialize += declaration.getInitializer().visit(this, arg) + "";
 
             if (type.equals("String")) {
                 if (declaration.getInitializer() instanceof NumLitExpr) {
@@ -270,7 +329,12 @@ public class GenerateVisitor implements ASTVisitor {
                 }
             }
 
-            decString += initialize;
+        }
+
+        decString += initializer + initialize + end;
+
+        if (!initializer.equals("")) {
+            decString += ")";
         }
 
         return decString;
@@ -328,6 +392,15 @@ public class GenerateVisitor implements ASTVisitor {
             type = type.toLowerCase();
         }
 
+
+        if (type.equals("pixel")) {
+            type = "int";
+        }
+        // NameDef is an image -> Java type BufferedImage
+        if (type.equals("image")) {
+            type = "BufferedImage";
+        }
+
         String nameDef1 = type + " " + nameDef.getIdent().visit(this, arg);
         return nameDef1;
     }
@@ -369,6 +442,14 @@ public class GenerateVisitor implements ASTVisitor {
             type = type.toLowerCase();
         }
 
+        if (type.equals("pixel")) {
+            type = "int";
+        }
+        // NameDef is an image -> Java type BufferedImage
+        if (type.equals("image")) {
+            type = "BufferedImage";
+        }
+
         String program1 = "public class " + program.getIdent().visit(this, arg) + " {\n\tpublic static " + type + " apply(";
 
         progName = false;
@@ -395,12 +476,15 @@ public class GenerateVisitor implements ASTVisitor {
 
         program1 += "\t}\n}";
 
-        if (write) {
-            program1 = "import edu.ufl.cise.plcsp23.runtime.ConsoleIO;\n" + program1;
-        }
+        /*if (write) {
+            //program1 = "import edu.ufl.cise.plcsp23.runtime.ConsoleIO;\n" + program1;
+        }*/
         if (math) {
             program1 = "import java.lang.Math; \n" + program1;
         }
+
+        program1 = "import java.awt.Image;\nimport java.awt.image.BufferedImage; \n" + program1;
+        program1 = "import edu.ufl.cise.plcsp23.runtime.*;\n" + program1;
 
         scope--;
 
