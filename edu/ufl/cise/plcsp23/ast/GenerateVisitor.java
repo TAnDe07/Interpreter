@@ -344,10 +344,19 @@ public class GenerateVisitor implements ASTVisitor {
     public Object visitDimension(Dimension dimension, Object arg) throws PLCException {
         return null;
     }
-    // assignment 6
+
     @Override
     public Object visitExpandedPixelExpr(ExpandedPixelExpr expandedPixelExpr, Object arg) throws PLCException {
-        return null;
+        String pixel = "";
+        // Invoke PixelOps.pack on the values of the three expressions
+
+        String red = expandedPixelExpr.getRedExpr().visit(this, arg) + "";
+        String green = expandedPixelExpr.getGrnExpr().visit(this, arg) + "";
+        String blue = expandedPixelExpr.getBluExpr().visit(this, arg) + "";
+
+        pixel = "PixelOps.pack(" + red + ", " + green + ", " + blue + ")";
+
+        return pixel;
     }
 
     @Override
