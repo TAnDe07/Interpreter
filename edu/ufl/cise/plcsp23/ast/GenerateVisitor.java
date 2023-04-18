@@ -557,7 +557,7 @@ public class GenerateVisitor implements ASTVisitor {
                         unaryExprPostfix.pixel.x.visit(this, arg) + "," +
                         unaryExprPostfix.pixel.y.visit(this, arg) + ")" + "\n";
             }
-            //6_2
+            //6_2 (not passing)
             else if (unaryExprPostfix.pixel == null) {
                 if (unaryExprPostfix.color.toString() == "red") {
                     pixel += "ImageOps.extractRed(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
@@ -589,6 +589,7 @@ public class GenerateVisitor implements ASTVisitor {
             }
         }
         else if (unaryExprPostfix.primary.type == Type.PIXEL) {
+            //6_3
             if (unaryExprPostfix.pixel == null) {
 
                 if (unaryExprPostfix.color.toString() == "red") {
