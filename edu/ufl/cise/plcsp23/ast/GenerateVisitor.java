@@ -4,7 +4,6 @@ import edu.ufl.cise.plcsp23.IToken;
 import edu.ufl.cise.plcsp23.PLCException;
 import edu.ufl.cise.plcsp23.TypeCheckException;
 
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -427,7 +426,7 @@ public class GenerateVisitor implements ASTVisitor {
     // assignment 6
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCException {
-        return null;
+        return null ;
     }
 
     // assignment 6
@@ -548,7 +547,63 @@ public class GenerateVisitor implements ASTVisitor {
     // assignment 6
     @Override
     public Object visitUnaryExprPostFix(UnaryExprPostfix unaryExprPostfix, Object arg) throws PLCException {
-        return null;
+
+        String pixel = "";
+
+        if (unaryExprPostfix.primary.type == Type.IMAGE) {
+            //6_0
+            if (unaryExprPostfix.color == null) {
+                pixel += "ImageOps.getRGB(" + unaryExprPostfix.primary.visit(this, arg) + "," +
+                        unaryExprPostfix.pixel.x.visit(this, arg) + "," +
+                        unaryExprPostfix.pixel.y.visit(this, arg) + ")" + "\n";
+            }
+            //6_2
+            else if (unaryExprPostfix.pixel == null) {
+                if (unaryExprPostfix.color.toString() == "red") {
+                    pixel += "ImageOps.extractRed(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
+                }
+                else if (unaryExprPostfix.color.toString() == "green") {
+                    pixel += "ImageOps.extractGrn(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
+                }
+                else if (unaryExprPostfix.color.toString() == "blue") {
+                    pixel += "ImageOps.extractBlu(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
+                }
+            }
+            //6_1
+            else {
+                if (unaryExprPostfix.color.toString() == "red") {
+                    pixel += "PixelOps.red(ImageOps.getRGB(" + unaryExprPostfix.primary.visit(this, arg) + "," +
+                            unaryExprPostfix.pixel.x.visit(this, arg) + "," +
+                            unaryExprPostfix.pixel.y.visit(this, arg) + "))" + "\n";
+                }
+                else if (unaryExprPostfix.color.toString() == "green") {
+                    pixel += "PixelOps.grn(ImageOps.getRGB(" + unaryExprPostfix.primary.visit(this, arg) + "," +
+                            unaryExprPostfix.pixel.x.visit(this, arg) + "," +
+                            unaryExprPostfix.pixel.y.visit(this, arg) + "))" + "\n";
+                }
+                else if (unaryExprPostfix.color.toString() == "blue") {
+                    pixel += "PixelOps.blu(ImageOps.getRGB(" + unaryExprPostfix.primary.visit(this, arg) + "," +
+                            unaryExprPostfix.pixel.x.visit(this, arg) + "," +
+                            unaryExprPostfix.pixel.y.visit(this, arg) + "))" + "\n";
+                }
+            }
+        }
+        else if (unaryExprPostfix.primary.type == Type.PIXEL) {
+            if (unaryExprPostfix.pixel == null) {
+
+                if (unaryExprPostfix.color.toString() == "red") {
+                   pixel = "PixelOps.red(" + unaryExprPostfix.primary.visit(this, arg) + "\n";
+                }
+                else if (unaryExprPostfix.color.toString() == "green") {
+                    pixel = "PixelOps.grn(" + unaryExprPostfix.primary.visit(this, arg) + "\n";
+                }
+                else if (unaryExprPostfix.color.toString() == "blue") {
+                    pixel = "PixelOps.blu(" + unaryExprPostfix.primary.visit(this, arg) + "\n";
+                }
+            }
+        }
+
+        return pixel;
     }
 
     @Override
