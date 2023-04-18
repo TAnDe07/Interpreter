@@ -562,10 +562,10 @@ public class GenerateVisitor implements ASTVisitor {
                 if (unaryExprPostfix.color.toString() == "red") {
                     pixel += "ImageOps.extractRed(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
                 }
-                else if (unaryExprPostfix.color.toString() == "green") {
+                else if (unaryExprPostfix.color.toString() == "grn") {
                     pixel += "ImageOps.extractGrn(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
                 }
-                else if (unaryExprPostfix.color.toString() == "blue") {
+                else if (unaryExprPostfix.color.toString() == "blu") {
                     pixel += "ImageOps.extractBlu(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
                 }
             }
@@ -576,12 +576,12 @@ public class GenerateVisitor implements ASTVisitor {
                             unaryExprPostfix.pixel.x.visit(this, arg) + "," +
                             unaryExprPostfix.pixel.y.visit(this, arg) + "))" + "\n";
                 }
-                else if (unaryExprPostfix.color.toString() == "green") {
+                else if (unaryExprPostfix.color.toString() == "grn") {
                     pixel += "PixelOps.grn(ImageOps.getRGB(" + unaryExprPostfix.primary.visit(this, arg) + "," +
                             unaryExprPostfix.pixel.x.visit(this, arg) + "," +
                             unaryExprPostfix.pixel.y.visit(this, arg) + "))" + "\n";
                 }
-                else if (unaryExprPostfix.color.toString() == "blue") {
+                else if (unaryExprPostfix.color.toString() == "blu") {
                     pixel += "PixelOps.blu(ImageOps.getRGB(" + unaryExprPostfix.primary.visit(this, arg) + "," +
                             unaryExprPostfix.pixel.x.visit(this, arg) + "," +
                             unaryExprPostfix.pixel.y.visit(this, arg) + "))" + "\n";
@@ -592,13 +592,13 @@ public class GenerateVisitor implements ASTVisitor {
             if (unaryExprPostfix.pixel == null) {
 
                 if (unaryExprPostfix.color.toString() == "red") {
-                   pixel = "PixelOps.red(" + unaryExprPostfix.primary.visit(this, arg) + "\n";
+                   pixel = "PixelOps.red(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
                 }
-                else if (unaryExprPostfix.color.toString() == "green") {
-                    pixel = "PixelOps.grn(" + unaryExprPostfix.primary.visit(this, arg) + "\n";
+                else if (unaryExprPostfix.color.toString() == "grn") {
+                    pixel = "PixelOps.grn(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
                 }
-                else if (unaryExprPostfix.color.toString() == "blue") {
-                    pixel = "PixelOps.blu(" + unaryExprPostfix.primary.visit(this, arg) + "\n";
+                else if (unaryExprPostfix.color.toString() == "blu") {
+                    pixel = "PixelOps.blu(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
                 }
             }
         }
