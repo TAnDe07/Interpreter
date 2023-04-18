@@ -168,6 +168,64 @@ public class GenerateVisitor implements ASTVisitor {
                 }
             }
         }
+        else if (binaryExpr.left.type == Type.IMAGE && binaryExpr.right.type == Type.INT) {
+            switch (binaryExpr.op) {
+                case PLUS -> {
+                    binary = "ImageOps.binaryImageScalarOp(ImageOps.OP.PLUS" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+                case MINUS -> {
+                    binary = "ImageOps.binaryImageScalarOp(ImageOps.OP.MINUS" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+                case TIMES -> {
+                    binary = "ImageOps.binaryImageScalarOp(ImageOps.OP.TIMES" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+                case DIV -> {
+                    binary = "ImageOps.binaryImageScalarOp(ImageOps.OP.DIV" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+                case MOD -> {
+                    binary = "ImageOps.binaryImageScalarOp(ImageOps.OP.MOD" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+            }
+        }
+        else if (binaryExpr.left.type == Type.PIXEL && binaryExpr.right.type == Type.PIXEL) {
+            switch (binaryExpr.op) {
+                case PLUS -> {
+                    binary = "ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.PLUS" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+                case MINUS -> {
+                    binary = "ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.MINUS" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+                case TIMES -> {
+                    binary = "ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.TIMES" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+                case DIV -> {
+                    binary = "ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.DIV" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+                case MOD -> {
+                    binary = "ImageOps.binaryPackedPixelPixelOp(ImageOps.OP.MOD" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+            }
+        }
 
         return binary;
     }
