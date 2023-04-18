@@ -139,6 +139,36 @@ public class GenerateVisitor implements ASTVisitor {
 
         binary += ")";
 
+        if (binaryExpr.left.type == Type.IMAGE && binaryExpr.right.type == Type.IMAGE) {
+            switch (binaryExpr.op) {
+                case PLUS -> {
+                    binary = "ImageOps.binaryImageImageOp(ImageOps.OP.PLUS" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+                case MINUS -> {
+                    binary = "ImageOps.binaryImageImageOp(ImageOps.OP.MINUS" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+                case TIMES -> {
+                    binary = "ImageOps.binaryImageImageOp(ImageOps.OP.TIMES" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+                case DIV -> {
+                    binary = "ImageOps.binaryImageImageOp(ImageOps.OP.DIV" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+                case MOD -> {
+                    binary = "ImageOps.binaryImageImageOp(ImageOps.OP.MOD" + ", " +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + ")";
+                }
+            }
+        }
+
         return binary;
     }
 
@@ -349,9 +379,9 @@ public class GenerateVisitor implements ASTVisitor {
         String pixel = "";
         // Invoke PixelOps.pack on the values of the three expressions
 
-        String red = expandedPixelExpr.getRedExpr().visit(this, arg) + "";
-        String green = expandedPixelExpr.getGrnExpr().visit(this, arg) + "";
-        String blue = expandedPixelExpr.getBluExpr().visit(this, arg) + "";
+        String red = expandedPixelExpr.getRedExpr().visit(this, arg).toString();
+        String green = expandedPixelExpr.getGrnExpr().visit(this, arg).toString();
+        String blue = expandedPixelExpr.getBluExpr().visit(this, arg).toString();
 
         pixel = "PixelOps.pack(" + red + ", " + green + ", " + blue + ")";
 
@@ -426,7 +456,9 @@ public class GenerateVisitor implements ASTVisitor {
     // assignment 6
     @Override
     public Object visitPixelSelector(PixelSelector pixelSelector, Object arg) throws PLCException {
-        return null ;
+        String pixelS = "(" + pixelSelector.getX().visit(this, arg) + "," +
+                pixelSelector.getY().visit(this, arg);
+        return pixelS;
     }
 
     // assignment 6
@@ -533,15 +565,14 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitUnaryExpr(UnaryExpr unaryExpr, Object arg) throws PLCException {
         String unaryString = "";
-       /*
-        switch (unaryExpr.op) {
-            case BANG -> unaryString = "!";
-            case MINUS -> unaryString = "-";
-            case RES_sin -> unaryString = "sin";
-            case RES_cos -> unaryString = "cos";
-            case RES_atan -> unaryString = "atan";
-        }*/
-        return null;
+        /*if (unaryExpr.e.type == Type.INT){
+            switch (unaryExpr.op) {
+                case BANG -> unaryString = unaryExpr.e.visit(this, arg).toString() + "==0 ? 1 : 0";
+                case MINUS -> unaryString = "-" + unaryExpr.e.toString();
+            }
+        }
+         */
+        return unaryString;
     }
 
     // assignment 6
@@ -555,18 +586,18 @@ public class GenerateVisitor implements ASTVisitor {
             if (unaryExprPostfix.color == null) {
                 pixel += "ImageOps.getRGB(" + unaryExprPostfix.primary.visit(this, arg) + "," +
                         unaryExprPostfix.pixel.x.visit(this, arg) + "," +
-                        unaryExprPostfix.pixel.y.visit(this, arg) + ")" + "\n";
+                        unaryExprPostfix.pixel.y.visit(this, arg) + ")";
             }
             //6_2 (not passing)
             else if (unaryExprPostfix.pixel == null) {
                 if (unaryExprPostfix.color.toString() == "red") {
-                    pixel += "ImageOps.extractRed(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
+                    pixel += "ImageOps.extractRed(" + unaryExprPostfix.primary.visit(this, arg) + ")";
                 }
                 else if (unaryExprPostfix.color.toString() == "grn") {
-                    pixel += "ImageOps.extractGrn(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
+                    pixel += "ImageOps.extractGrn(" + unaryExprPostfix.primary.visit(this, arg) + ")";
                 }
                 else if (unaryExprPostfix.color.toString() == "blu") {
-                    pixel += "ImageOps.extractBlu(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
+                    pixel += "ImageOps.extractBlu(" + unaryExprPostfix.primary.visit(this, arg) + ")";
                 }
             }
             //6_1
@@ -574,17 +605,17 @@ public class GenerateVisitor implements ASTVisitor {
                 if (unaryExprPostfix.color.toString() == "red") {
                     pixel += "PixelOps.red(ImageOps.getRGB(" + unaryExprPostfix.primary.visit(this, arg) + "," +
                             unaryExprPostfix.pixel.x.visit(this, arg) + "," +
-                            unaryExprPostfix.pixel.y.visit(this, arg) + "))" + "\n";
+                            unaryExprPostfix.pixel.y.visit(this, arg) + "))";
                 }
                 else if (unaryExprPostfix.color.toString() == "grn") {
                     pixel += "PixelOps.grn(ImageOps.getRGB(" + unaryExprPostfix.primary.visit(this, arg) + "," +
                             unaryExprPostfix.pixel.x.visit(this, arg) + "," +
-                            unaryExprPostfix.pixel.y.visit(this, arg) + "))" + "\n";
+                            unaryExprPostfix.pixel.y.visit(this, arg) + "))";
                 }
                 else if (unaryExprPostfix.color.toString() == "blu") {
                     pixel += "PixelOps.blu(ImageOps.getRGB(" + unaryExprPostfix.primary.visit(this, arg) + "," +
                             unaryExprPostfix.pixel.x.visit(this, arg) + "," +
-                            unaryExprPostfix.pixel.y.visit(this, arg) + "))" + "\n";
+                            unaryExprPostfix.pixel.y.visit(this, arg) + "))";
                 }
             }
         }
@@ -593,13 +624,13 @@ public class GenerateVisitor implements ASTVisitor {
             if (unaryExprPostfix.pixel == null) {
 
                 if (unaryExprPostfix.color.toString() == "red") {
-                   pixel = "PixelOps.red(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
+                   pixel = "PixelOps.red(" + unaryExprPostfix.primary.visit(this, arg) + ")" ;
                 }
                 else if (unaryExprPostfix.color.toString() == "grn") {
-                    pixel = "PixelOps.grn(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
+                    pixel = "PixelOps.grn(" + unaryExprPostfix.primary.visit(this, arg) + ")" ;
                 }
                 else if (unaryExprPostfix.color.toString() == "blu") {
-                    pixel = "PixelOps.blu(" + unaryExprPostfix.primary.visit(this, arg) + ")" + "\n";
+                    pixel = "PixelOps.blu(" + unaryExprPostfix.primary.visit(this, arg) + ")" ;
                 }
             }
         }
