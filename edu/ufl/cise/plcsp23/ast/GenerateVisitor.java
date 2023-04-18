@@ -382,6 +382,11 @@ public class GenerateVisitor implements ASTVisitor {
                     String height1 = height.visit(this, arg) + "";
                     end = ", " + width1 + ", " + height1;
                 }
+                else if (declaration.getInitializer() instanceof ExpandedPixelExpr) {
+
+                    initializer = "ImageOps.setAllPixels(" + declaration.getNameDef().getIdent().visit(this, arg);
+                    initializer += ", ";
+                }
             }
         }
 
@@ -399,8 +404,21 @@ public class GenerateVisitor implements ASTVisitor {
         // visit nameDef
         decString = type + " " + declaration.getNameDef().getIdent().visit(this, arg);
 
+
+
         // if there is an Expr, visit Expr
         if (declaration.initializer != null) {
+            // need to initialize first then set equal on next line
+            if (declaration.getInitializer() instanceof ExpandedPixelExpr && type.equals("BufferedImage")) {
+                decString += " = ImageOps.makeImage(";
+                Expr width = declaration.getNameDef().getDimension().getWidth();
+                String width1 = width.visit(this, arg) + "";
+                Expr height = declaration.getNameDef().getDimension().getHeight();
+                String height1 = height.visit(this, arg) + "";
+
+                decString += width1 + ", " + height1 + ");\n" + declaration.getNameDef().getIdent().visit(this, arg);
+            }
+
             decString += " = ";
 
             initialize += declaration.getInitializer().visit(this, arg) + "";
@@ -506,7 +524,7 @@ public class GenerateVisitor implements ASTVisitor {
         return numLitExpr.getValue();
     }
 
-    // assignment 6
+    // not implemented
     @Override
     public Object visitPixelFuncExpr(PixelFuncExpr pixelFuncExpr, Object arg) throws PLCException {
         return null;
