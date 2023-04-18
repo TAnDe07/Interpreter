@@ -20,7 +20,7 @@ class Assignment6Test_starter {
 
 	// Some images to use in tests. Feel free to replace with your own.
 	String beach = "https://images.freeimages.com/images/large-previews/5a5/the-path-to-the-sunrise-1629704.jpg";
-	String owl = "https://pocket-syndicated-images.s3.amazonaws.com/622ad94833741.png";
+	String dog = "https://upload.wikimedia.org/wikipedia/commons/4/43/Cute_dog.jpg";
 	String dino = "https://cdn.theatlantic.com/thumbor/-WDVFQL2O-tLHvsDK1DzflsSWAo=/1500x1000/media/img/photo/2023/03/photos-week-5/a01_1249659784/original.jpg";
 
 	Object genCodeAndRun(String input, String mypackage, Object[] params) throws Exception {
@@ -105,7 +105,7 @@ class Assignment6Test_starter {
 				: im[xx,yy].
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		int xx = 0;
 		int yy = 0;
 		Object[] params = { s, xx, yy };
@@ -124,7 +124,7 @@ class Assignment6Test_starter {
 				: im[xx,yy]:red.
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		int xx = 0;
 		int yy = 0;
 		Object[] params = { s, xx, yy };
@@ -143,7 +143,7 @@ class Assignment6Test_starter {
 				: im:red.
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		Object[] params = { s };
 		BufferedImage result = (BufferedImage) genCodeAndRun(input, "", params);
 		show(result);
@@ -161,7 +161,7 @@ class Assignment6Test_starter {
 				: imr:blu. ~this is a black image
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		Object[] params = { s };
 		BufferedImage result = (BufferedImage) genCodeAndRun(input, "", params);
 		show(result);
@@ -222,10 +222,10 @@ class Assignment6Test_starter {
 				:im/3.
 				}
 				""";
-		Object[] params = { owl };
+		Object[] params = {dog};
 		BufferedImage result = (BufferedImage) genCodeAndRun(input, "", params);
 		show(result);
-		BufferedImage sourceImage = FileURLIO.readImage(owl);
+		BufferedImage sourceImage = FileURLIO.readImage(dog);
 		BufferedImage expected = ImageOps.binaryImageScalarOp(ImageOps.OP.DIV, sourceImage, 3);
 		imageEquals(expected, result);
 	}
@@ -276,7 +276,7 @@ class Assignment6Test_starter {
 				:k.
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		Object[] params = { s };
 		BufferedImage result = (BufferedImage) genCodeAndRun(input, "", params);
 		BufferedImage expected = FileURLIO.readImage(s);
@@ -292,7 +292,7 @@ class Assignment6Test_starter {
 				:k.
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		Object[] params = { s, 100, 200 };
 		BufferedImage result = (BufferedImage) genCodeAndRun(input, "", params);
 		BufferedImage expected = FileURLIO.readImage(s, 100, 200);
@@ -323,7 +323,7 @@ class Assignment6Test_starter {
 				:kk.
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		Object[] params = { s };
 		BufferedImage result = (BufferedImage) genCodeAndRun(input, "", params);
 		BufferedImage k = FileURLIO.readImage(s);
@@ -341,7 +341,7 @@ class Assignment6Test_starter {
 				:kk.
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		Object[] params = { s };
 		BufferedImage result = (BufferedImage) genCodeAndRun(input, "", params);
 		BufferedImage k = FileURLIO.readImage(s);
@@ -358,7 +358,7 @@ class Assignment6Test_starter {
 				:k.
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		Object[] params = { s };
 		BufferedImage result = (BufferedImage) genCodeAndRun(input, "", params);
 		BufferedImage k = FileURLIO.readImage(s, 200, 50);
@@ -393,7 +393,7 @@ class Assignment6Test_starter {
 				:kk.
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		Object[] params = { s, 100, 200 };
 		BufferedImage result = (BufferedImage) genCodeAndRun(input, "", params);
 		BufferedImage expected = FileURLIO.readImage(s, 100, 200);
@@ -561,7 +561,7 @@ class Assignment6Test_starter {
 				:kk.
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		BufferedImage sourceImage = FileURLIO.readImage(s);
 		int wSource = sourceImage.getWidth();
 		int hSource = sourceImage.getHeight();
@@ -602,7 +602,7 @@ class Assignment6Test_starter {
 					  :rot.
 				}
 				 		""";
-		String s = owl;
+		String s = dog;
 		BufferedImage b = FileURLIO.readImage(s);
 		int w = b.getWidth() / 2;
 		Object[] params = { s, w };
@@ -632,12 +632,12 @@ class Assignment6Test_starter {
 				}
 				""";
 		BufferedImage b = FileURLIO.readImage(beach);
-		BufferedImage o = FileURLIO.readImage(owl);
+		BufferedImage o = FileURLIO.readImage(dog);
 		int w = b.getWidth();
 		int h = o.getHeight();
 		b = FileURLIO.readImage(beach, w, h);
-		o = FileURLIO.readImage(owl, w, h);
-		Object[] params = { beach, owl, w, h };
+		o = FileURLIO.readImage(dog, w, h);
+		Object[] params = { beach, dog, w, h };
 		BufferedImage result = (BufferedImage) genCodeAndRun(input, "", params);
 		BufferedImage expected = ImageOps.binaryImageScalarOp(ImageOps.OP.DIV,
 				ImageOps.binaryImageImageOp(ImageOps.OP.PLUS, b, o), 2);
@@ -757,7 +757,7 @@ class Assignment6Test_starter {
 				}
 				""";
 		String s0 = beach;
-		String s1 = owl;
+		String s1 = dog;
 		int w = 100;
 		int h = 200;
 		Object[] params = { s0, s1, w, h };
@@ -832,7 +832,7 @@ class Assignment6Test_starter {
 				:tallOwl.
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		Object[] params = { s };
 		BufferedImage result = (BufferedImage) genCodeAndRun(input, "", params);
 		show(result);
@@ -851,7 +851,7 @@ class Assignment6Test_starter {
 				:darkowl.
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		Object[] params = { s };
 		BufferedImage result = (BufferedImage) genCodeAndRun(input, "", params);
 		show(result);
@@ -874,7 +874,7 @@ class Assignment6Test_starter {
 				:newImage.
 				}
 				""";
-		String s = owl;
+		String s = dog;
 		BufferedImage sourceImage = FileURLIO.readImage(s);
 		int w = sourceImage.getWidth();
 		int h = sourceImage.getHeight();
@@ -999,7 +999,7 @@ class Assignment6Test_starter {
 				}
 				""";
 		String s0 = beach;
-		String s1 = owl;
+		String s1 = dog;
 		BufferedImage sourceImage0 = FileURLIO.readImage(s0);
 		BufferedImage sourceImage1 = FileURLIO.readImage(s1);
 		int w = sourceImage0.getWidth();
