@@ -502,6 +502,15 @@ public class GenerateVisitor implements ASTVisitor {
 
                 decString += width1 + ", " + height1 + ");\n" + declaration.getNameDef().getIdent().visit(this, arg);
             }
+            else if (declaration.getInitializer().type == Type.PIXEL && type == "BufferedImage" ) {
+                decString += " = ImageOps.makeImage(";
+                Expr width = declaration.getNameDef().getDimension().getWidth();
+                String width1 = width.visit(this, arg) + "";
+                Expr height = declaration.getNameDef().getDimension().getHeight();
+                String height1 = height.visit(this, arg) + "";
+
+                return decString += width1 + ", " + height1 + ")";
+            }
 
             decString += " = ";
 
@@ -837,6 +846,10 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitWriteStatement(WriteStatement statementWrite, Object arg) throws PLCException {
         write = true;
+        if (statementWrite.e.type == Type.PIXEL) {
+            String statement = statementWrite.getE().visit(this, arg) + "";
+            return "ConsoleIO.writePixel(" + statement + ")";
+        }
         String statement = statementWrite.getE().visit(this, arg) + "";
         return "ConsoleIO.write(" + statement + ")";
     }
