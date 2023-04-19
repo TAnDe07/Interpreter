@@ -21,7 +21,8 @@ class Assignment6Test_starter {
 	// Some images to use in tests. Feel free to replace with your own.
 	String beach = "https://images.freeimages.com/images/large-previews/5a5/the-path-to-the-sunrise-1629704.jpg";
 	String dog = "https://pocket-syndicated-images.s3.amazonaws.com/622ad94833741.png";
-			// "https://upload.wikimedia.org/wikipedia/commons/6/64/The_Puppy.jpg";
+			//"https://pocket-syndicated-images.s3.amazonaws.com/622ad94833741.png";
+			//"https://upload.wikimedia.org/wikipedia/commons/6/64/The_Puppy.jpg";
 	String dino = "https://cdn.theatlantic.com/thumbor/-WDVFQL2O-tLHvsDK1DzflsSWAo=/1500x1000/media/img/photo/2023/03/photos-week-5/a01_1249659784/original.jpg";
 
 	Object genCodeAndRun(String input, String mypackage, Object[] params) throws Exception {
