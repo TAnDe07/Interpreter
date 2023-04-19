@@ -216,6 +216,11 @@ public class GenerateVisitor implements ASTVisitor {
                             binaryExpr.getLeft().visit(this, arg).toString() + ", " +
                             binaryExpr.getRight().visit(this, arg).toString() + ")";
                 }
+                case EQ -> {
+                    binary = "(ImageOps.equalsForCodeGen(" +
+                            binaryExpr.getLeft().visit(this, arg).toString() + ", " +
+                            binaryExpr.getRight().visit(this, arg).toString() + "))";
+                }
             }
         }
         else if (binaryExpr.left.type == Type.IMAGE && binaryExpr.right.type == Type.INT) {
@@ -488,7 +493,7 @@ public class GenerateVisitor implements ASTVisitor {
         // if there is an Expr, visit Expr
         if (declaration.initializer != null) {
             // need to initialize first then set equal on next line
-            if (declaration.getInitializer() instanceof ExpandedPixelExpr && type.equals("BufferedImage")) {
+            if (declaration.getInitializer() instanceof ExpandedPixelExpr && type == "BufferedImage" ) {
                 decString += " = ImageOps.makeImage(";
                 Expr width = declaration.getNameDef().getDimension().getWidth();
                 String width1 = width.visit(this, arg) + "";
