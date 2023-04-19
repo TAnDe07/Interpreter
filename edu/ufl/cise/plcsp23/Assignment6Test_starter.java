@@ -530,7 +530,7 @@ class Assignment6Test_starter {
 	 * 
 	 * It should also print ff000000 ffffffff
 	 */
-	/*
+
 	@Test
 	void cg19() throws Exception {
 		String input = """
@@ -549,10 +549,8 @@ class Assignment6Test_starter {
 				""";
 		Object[] params = {};
 		genCodeAndRun(input, "", params);
-		wait_for_input();
+		// wait_for_input(); //passes if this is commented out
 	}
-
-	 */
 
 	@Test
 	void cg20() throws Exception {
