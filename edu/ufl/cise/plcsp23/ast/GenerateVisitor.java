@@ -68,6 +68,19 @@ public class GenerateVisitor implements ASTVisitor {
 
         assignString += assign;
 
+        if (statementAssign.getLv().type == Type.IMAGE && statementAssign.getLv().getPixelSelector() == null && statementAssign.getLv().getColor() == null ){
+            if (statementAssign.getE().type == Type.STRING) {
+                return assignString = "ImageOps.copyInto(FileURLIO.readImage(" + assign + "), " + name + ")";
+            }
+            else if (statementAssign.getE().type == Type.IMAGE) {
+
+            }
+            else if (statementAssign.getE().type == Type.PIXEL) {
+
+            }
+
+        }
+
         return assignString;
     }
 
