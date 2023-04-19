@@ -20,12 +20,45 @@ public class GenerateVisitor implements ASTVisitor {
     int scope = 0;
 
     @Override
-    //NOT DONE
     public Object visitAssignmentStatement(AssignmentStatement statementAssign, Object arg) throws PLCException {
-
-        String assignString = visitLValue(statementAssign.lv, arg) + " = ";
+        String name = visitLValue(statementAssign.lv, arg) + "";
+        String assignString = name + " = ";
 
         String assign = statementAssign.getE().visit(this, arg) + "";
+
+        if (statementAssign.getLv().getPixelSelector() != null) {
+            // Variable type is image with pixel selector and color channel
+            if (statementAssign.getLv().getColor() != null) {
+                String color = "";
+                switch (statementAssign.getLv().getColor()) {
+                    case red -> {
+                        color = "Red";
+                    }
+                    case grn -> {
+                        color = "Grn";
+                    }
+                    case blu -> {
+                        color = "Blu";
+                    }
+                }
+                String loop = "for (int y = 0; y != " + name + ".getHeight(); y++) {\n\t";
+                loop += "for (int x = 0; x != " + name + ".getWidth(); x++) {\n\t\t";
+                loop += "ImageOps.setRGB(" + name + ", x, y, PixelOps.set" + color + "(";
+                loop += "ImageOps.getRGB(" + name + ", x, y), " + assign + "));\n\t}\n}";
+
+                assign = "";
+                assignString = loop;
+            }
+            // Variable type is image with pixel selector, no color channel
+            else {
+                String loop = "for (int y = 0; y != " + statementAssign.getLv().visit(this, arg) + ".getHeight(); y++) {\n\t";
+                loop += "for (int x = 0; x != " + statementAssign.getLv().visit(this, arg) + ".getWidth(); x++) {\n\t\t";
+                loop += "ImageOps.setRGB(" + statementAssign.getLv().visit(this, arg) + ", x, y, " + assign + ");\n\t}\n}";
+
+                assign = "";
+                assignString = loop;
+            }
+        }
 
         if (statementAssign.getLv().getType() == Type.STRING) {
             if (statementAssign.getE() instanceof NumLitExpr) {
@@ -493,6 +526,7 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitLValue(LValue lValue, Object arg) throws PLCException {
        String LString = lValue.getIdent().visit(this, arg).toString();
+       // Handle PixelSelector and ChannelSelector in parent AssignmentStatement where context is known
        return LString;
     }
 
@@ -540,7 +574,22 @@ public class GenerateVisitor implements ASTVisitor {
     // assignment 6
     @Override
     public Object visitPredeclaredVarExpr(PredeclaredVarExpr predeclaredVarExpr, Object arg) throws PLCException {
-        return null;
+        String variable = "";
+        switch(predeclaredVarExpr.getKind()) {
+            case RES_x -> {
+                variable = "x";
+            }
+            case RES_y -> {
+                variable = "y";
+            }
+            case RES_a -> {
+                variable = "a";
+            }
+            case RES_r -> {
+                variable = "r";
+            }
+        }
+        return variable;
     }
 
     @Override
