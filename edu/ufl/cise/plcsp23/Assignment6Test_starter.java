@@ -40,7 +40,7 @@ class Assignment6Test_starter {
 	}
 
 	static final boolean VERBOSE = true;
-	static final boolean WAIT_FOR_INPUT = true;
+	static final boolean WAIT_FOR_INPUT = false;
 
 	/**
 	 * This waits for input to prevent Junit and your IDE from closing the window
@@ -549,7 +549,7 @@ class Assignment6Test_starter {
 				""";
 		Object[] params = {};
 		genCodeAndRun(input, "", params);
-		// wait_for_input(); //passes if this is commented out
+		wait_for_input(); //passes if this is commented out
 	}
 
 	@Test

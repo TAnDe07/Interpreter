@@ -71,15 +71,15 @@ public class GenerateVisitor implements ASTVisitor {
         //Variable type is image, no pixel selector, no color channel
         if (statementAssign.getLv().type == Type.IMAGE && statementAssign.getLv().getPixelSelector() == null && statementAssign.getLv().getColor() == null ){
             if (statementAssign.getE().type == Type.STRING) {
-                return assignString = "ImageOps.copyInto(FileURLIO.readImage(" + assign + "), " + name + ")";
+                assignString = "ImageOps.copyInto(FileURLIO.readImage(" + assign + "), " + name + ")";
             }
             else if (statementAssign.getE().type == Type.IMAGE) {
-                return assignString = "ImageOps.copyInto(" + name +", " + assign + ")";
+                assignString = "ImageOps.copyInto(" + name +", " + assign + ")";
             }
             else if (statementAssign.getE().type == Type.PIXEL) {
                 ExpandedPixelExpr e = (ExpandedPixelExpr) statementAssign.getE();
                 Type t = e.type;
-                return assignString = "ImageOps.setAllPixels(" + name + ", " +
+                assignString = "ImageOps.setAllPixels(" + name + ", " +
                         visitExpandedPixelExpr(e, arg) + ")";
             }
 
@@ -466,7 +466,8 @@ public class GenerateVisitor implements ASTVisitor {
                     String height1 = height.visit(this, arg) + "";
                     end = ", " + width1 + ", " + height1;
                 }
-                else if (declaration.getInitializer() instanceof ExpandedPixelExpr) {
+                else /*if (declaration.getInitializer() instanceof ExpandedPixelExpr ||
+                        (declaration.getInitializer() instanceof IdentExpr && declaration.getInitializer().getType() == Type.PIXEL))*/ {
 
                     initializer = "ImageOps.setAllPixels(" + declaration.getNameDef().getIdent().visit(this, arg);
                     initializer += ", ";
@@ -509,7 +510,7 @@ public class GenerateVisitor implements ASTVisitor {
                 Expr height = declaration.getNameDef().getDimension().getHeight();
                 String height1 = height.visit(this, arg) + "";
 
-                return decString += width1 + ", " + height1 + ")";
+                decString += width1 + ", " + height1 + ");\n" + declaration.getNameDef().getIdent().visit(this, arg);
             }
 
             decString += " = ";
