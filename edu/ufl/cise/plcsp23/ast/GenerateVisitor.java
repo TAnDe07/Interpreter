@@ -14,6 +14,8 @@ public class GenerateVisitor implements ASTVisitor {
     boolean math = false;
     Type program;
     boolean progName;
+    boolean stringDeclare = false;
+    boolean binary1 = false;
 
     HashMap<String, Vector<Integer>> scopes = new HashMap<>();
 
@@ -64,6 +66,9 @@ public class GenerateVisitor implements ASTVisitor {
             if (statementAssign.getE() instanceof NumLitExpr) {
                 assign = "\"" + assign + "\"";
             }
+            if (statementAssign.getE().getType() == Type.IMAGE) {
+                assign = "BufferedImage.toString(" + assign + ")";
+            }
         }
 
         assignString += assign;
@@ -94,6 +99,7 @@ public class GenerateVisitor implements ASTVisitor {
         String kind = "";
         boolean bool = false;
         boolean logic = false;
+        binary1 = true;
 
         switch(binaryExpr.getOp()) {
             case EQ -> { // ==
@@ -184,7 +190,12 @@ public class GenerateVisitor implements ASTVisitor {
         binary += ")";
 
         if (bool) {
-            binary += " ? 1 : 0";
+            if (stringDeclare) {
+                binary += " ? \"1\" : \"0\"";
+            }
+            else {
+                binary += " ? 1 : 0";
+            }
         }
 
         binary += ")";
@@ -311,6 +322,8 @@ public class GenerateVisitor implements ASTVisitor {
             }
         }
 
+        binary1 = false;
+
         return binary;
     }
 
@@ -410,6 +423,7 @@ public class GenerateVisitor implements ASTVisitor {
         String end = "";
         if (type.equals("STRING")) {
             type = "String";
+            stringDeclare = true;
         }
         else {
             type = type.toLowerCase();
@@ -525,6 +539,12 @@ public class GenerateVisitor implements ASTVisitor {
                     if (declaration.getInitializer().getType() == Type.INT) {
                         initialize = "String.valueOf(" + initialize + ")";
                     }
+                    if (declaration.getInitializer().getType() == Type.PIXEL) {
+                        initialize = "Integer.toHexString(" + initialize + ")";
+                    }
+                }
+                if (declaration.getInitializer().getType() == Type.IMAGE) {
+                    initialize = "BufferedImage.toString(" + initialize + ")";
                 }
             }
 
@@ -535,6 +555,8 @@ public class GenerateVisitor implements ASTVisitor {
         if (!initializer.equals("")) {
             decString += ")";
         }
+
+        stringDeclare = false;
 
         return decString;
     }
@@ -736,6 +758,14 @@ public class GenerateVisitor implements ASTVisitor {
             expr = "String.valueOf(" + expr + ")";
         }
 
+        if (returnStatement.getE() instanceof IdentExpr && program == Type.STRING && returnStatement.getE().getType() == Type.PIXEL) {
+            expr = "Integer.toHexString(" + expr + ")";
+        }
+
+        if (returnStatement.getE().getType() == Type.IMAGE && program == Type.STRING) {
+            expr = "BufferedImage.toString(" + expr + ")";
+        }
+
         String return1 = "return " + expr;
         return return1;
     }
@@ -751,13 +781,28 @@ public class GenerateVisitor implements ASTVisitor {
     @Override
     public Object visitUnaryExpr(UnaryExpr unaryExpr, Object arg) throws PLCException {
         String unaryString = "";
-        /*if (unaryExpr.e.type == Type.INT){
+        if (unaryExpr.e.type == Type.INT){
             switch (unaryExpr.op) {
-                case BANG -> unaryString = unaryExpr.e.visit(this, arg).toString() + "==0 ? 1 : 0";
-                case MINUS -> unaryString = "-" + unaryExpr.e.toString();
+                case BANG -> {
+                    unaryString = unaryExpr.e.visit(this, arg).toString();
+                    if (stringDeclare) {
+                        unaryString += " == 0 ? \"1\" : \"0\"";
+                    }
+                    else {
+                        unaryString += " == 0 ? 1 : 0";
+                    }
+                }
+
+                case MINUS -> {
+                    unaryString = "-" + unaryExpr.e.visit(this, arg);
+                    if (stringDeclare && !binary1 &&
+                            (unaryExpr.getE() instanceof IdentExpr || unaryExpr.getE() instanceof NumLitExpr)) {
+                        unaryString = "String.valueOf(" + unaryString + ")";
+                    }
+                }
             }
         }
-         */
+
         return unaryString;
     }
 
