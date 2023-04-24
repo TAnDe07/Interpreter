@@ -364,6 +364,10 @@ public class GenerateVisitor implements ASTVisitor {
 
                 // removes conversion to integer, leaving boolean
                 guard = guard.substring(1, guard.length() - 9);
+                if (stringDeclare) {
+                    // get rid of extra quotes
+                    guard = guard.substring(0, guard.length() - 4);
+                }
             }
             else {
                 guard += "!= 0)";
