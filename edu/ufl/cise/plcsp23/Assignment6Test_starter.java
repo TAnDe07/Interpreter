@@ -101,7 +101,7 @@ class Assignment6Test_starter {
 		}
 		assertArrayEquals(expectedPixelArray, pixelArray);
 	}
-/*
+
 	@Test
 	void cg6_0() throws Exception {
 		String input = """
@@ -533,7 +533,7 @@ class Assignment6Test_starter {
 	 * 
 	 * It should also print ff000000 ffffffff
 	 */
-/*
+
 	@Test
 	void cg19() throws Exception {
 		String input = """
@@ -1496,7 +1496,7 @@ class Assignment6Test_starter {
 		assertEquals(1, (int) genCodeAndRun(input, "", params));
 		params = new Object[] { dog, beach };
 		assertEquals(0, (int) genCodeAndRun(input, "", params));
-	}*/
+	}
 
 	// more discord tests
 
@@ -1733,7 +1733,7 @@ class Assignment6Test_starter {
 		int j = 92;
 		Object[] params = {i, j};
 
-		assertEquals(-(i == j ? 1 : 0) + ((i*j>0 ? 1 : 0) + i - -(-(j))), (int) genCodeAndRun(input, "", params));
+		assertEquals(-(i == j ? 1 : 0) + ((((i*j>0 ? 1 : 0) < i) ? 1 : 0) + i - --j), (int) genCodeAndRun(input, "", params));
 	}
 
 	@Test

@@ -62,12 +62,27 @@ public class GenerateVisitor implements ASTVisitor {
             }
         }
 
+        if (statementAssign.getLv().getColor() != null && statementAssign.getLv().getPixelSelector() == null) {
+            String loop = "for (int y = 0; y != " + statementAssign.getLv().visit(this, arg) + ".getHeight(); y++) {\n\t";
+            loop += "for (int x = 0; x != " + statementAssign.getLv().visit(this, arg) + ".getWidth(); x++) {\n\t\t";
+            loop += "ImageOps.setRGB(" + statementAssign.getLv().visit(this, arg) + ", x, y, " + assign + ");\n\t}\n}";
+
+            assign = "";
+            assignString = loop;
+        }
+
         if (statementAssign.getLv().getType() == Type.STRING) {
             if (statementAssign.getE() instanceof NumLitExpr) {
                 assign = "\"" + assign + "\"";
             }
-            if (statementAssign.getE().getType() == Type.IMAGE) {
+            else if (statementAssign.getE().getType() == Type.IMAGE) {
                 assign = "BufferedImage.toString(" + assign + ")";
+            }
+            else if (statementAssign.getE().getType() == Type.INT) {
+                assign = "String.valueOf(" + assign + ")";
+            }
+            else if (statementAssign.getE().getType() == Type.PIXEL) {
+                assign = "PixelOps.packedToString(" + assign + ")";
             }
         }
 
@@ -82,10 +97,16 @@ public class GenerateVisitor implements ASTVisitor {
                 assignString = "ImageOps.copyInto(" + name +", " + assign + ")";
             }
             else if (statementAssign.getE().type == Type.PIXEL) {
-                ExpandedPixelExpr e = (ExpandedPixelExpr) statementAssign.getE();
-                Type t = e.type;
-                assignString = "ImageOps.setAllPixels(" + name + ", " +
-                        visitExpandedPixelExpr(e, arg) + ")";
+                if (statementAssign.getE() instanceof ExpandedPixelExpr) {
+                    ExpandedPixelExpr e = (ExpandedPixelExpr) statementAssign.getE();
+                    Type t = e.type;
+                    assignString = "ImageOps.setAllPixels(" + name + ", " +
+                            visitExpandedPixelExpr(e, arg) + ")";
+                }
+                else {
+                    assignString = statementAssign.getLv().visit(this, arg) + " = ImageOps.setAllPixels("
+                            + statementAssign.getLv().visit(this, arg) + ", " + assign + ")";
+                }
             }
 
         }
@@ -823,7 +844,7 @@ public class GenerateVisitor implements ASTVisitor {
                         unaryExprPostfix.pixel.x.visit(this, arg) + "," +
                         unaryExprPostfix.pixel.y.visit(this, arg) + ")";
             }
-            //6_2 (not passing)
+            //6_2
             else if (unaryExprPostfix.pixel == null) {
                 if (unaryExprPostfix.color.toString() == "red") {
                     pixel += "ImageOps.extractRed(" + unaryExprPostfix.primary.visit(this, arg) + ")";
