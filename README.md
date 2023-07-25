@@ -1,4 +1,4 @@
-# COP4020-Project
+# Interpreter
 
 Concrete syntax
 - <_expr> ::= <conditional_expr> | <or_expr>
